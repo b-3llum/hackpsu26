@@ -39,8 +39,18 @@ const NEGATABLE = new Set(["data_sold", "tracking", "location", "biometrics", "a
 // Negation only cancels a category when every clause that matches it is negated, so
 // "We do not sell your data, but we share it with advertisers." still flags data_sold.
 const CLAUSE_SPLIT = /[,;:]|\b(?:but|however|except|while|whereas|although)\b/i;
+// A clause that starts with another verb continues the previous one: "does not collect, share or sell".
+const CONTINUES_VERB_LIST = /^\s*(?:(?:and|or)\s+)?(?:sell|sold|rent|share|disclose|track|collect|use|train|retain|keep|store)\w*\b/i;
+function clauses(sentence) {
+  const out = [];
+  for (const c of sentence.split(CLAUSE_SPLIT)) {
+    if (out.length && CONTINUES_VERB_LIST.test(c)) out[out.length - 1] += `, ${c}`;
+    else out.push(c);
+  }
+  return out;
+}
 function negatedEverywhere(sentence, re) {
-  const hits = sentence.split(CLAUSE_SPLIT).filter((c) => c && re.test(c));
+  const hits = clauses(sentence).filter((c) => c && re.test(c));
   if (!hits.length) return NEGATED_ACTION.test(sentence);
   return hits.every((c) => NEGATED_ACTION.test(c));
 }

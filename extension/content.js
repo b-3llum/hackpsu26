@@ -6,6 +6,9 @@
   const NEG = /\b(reject|decline|deny|disagree|manage|settings|preferences|customi[sz]e|necessary only|essential only|learn more)\b/i;
   const CMP = '#onetrust-banner-sdk,#onetrust-consent-sdk,#CybotCookiebotDialog,#truste-consent-track,.truste_box_overlay,#qc-cmp2-container,.cc-window,.cookie-banner,[id*="cookie" i],[class*="cookie" i],[class*="consent" i],[id*="consent" i],[aria-label*="cookie" i],[aria-label*="consent" i],[role="dialog"],[role="alertdialog"]';
   const CONSENT_FORM_HINT = /\b(terms|privacy|policy|agree|consent)\b/i;
+  // Notice only banners (CrowdStrike, many OneTrust setups) have no Accept button: closing them is implied consent.
+  const CLOSE = /^(close|dismiss|close (banner|notice|this notice|cookie banner)|\u00D7|\u2715|x)$/i;
+  const KNOWN_CMP = "#onetrust-banner-sdk,#CybotCookiebotDialog,#truste-consent-track,.truste_box_overlay,#qc-cmp2-container,.cc-window";
   let last = 0;
 
   // In a CMP iframe, credit the receipt to the site the user is on.
@@ -24,19 +27,26 @@
     return (input.closest("label")?.innerText || byFor?.innerText || input.getAttribute("aria-label") || input.name || "").trim();
   }
 
-  function policyLinks() {
-    const out = {};
-    const seen = new Set();
-    for (const a of document.querySelectorAll("a[href]")) {
-      if (!/^https?:/.test(a.href) || seen.has(a.href)) continue;
-      const t = `${a.innerText} ${a.href}`.toLowerCase();
-      const type = /privacy/.test(t) ? "privacy" : /cookie/.test(t) ? "cookie" : /(terms|tos\b|conditions|user agreement|eula)/.test(t) ? "terms" : null;
-      if (!type) continue;
-      seen.add(a.href);
-      (out[type] = out[type] || []).push(a.href);
-    }
-    for (const k in out) out[k] = out[k].slice(0, 2);
-    return out;
+  // Links inside the consent box are the documents the user agreed to; the rest of the page (footer links to
+  // sales contracts, portals) is only a fallback.
+  function policyLinks(box) {
+    const collect = (root) => {
+      const out = {};
+      const seen = new Set();
+      for (const a of root.querySelectorAll("a[href]")) {
+        // Skip non web links and single page app routes ("#/..."), which fetch as an empty shell.
+        if (!/^https?:/.test(a.href) || a.href.includes("#/") || seen.has(a.href)) continue;
+        const t = `${a.innerText} ${a.href}`.toLowerCase();
+        const type = /privacy/.test(t) ? "privacy" : /cookie/.test(t) ? "cookie" : /(terms|tos\b|conditions|user agreement|eula)/.test(t) ? "terms" : null;
+        if (!type) continue;
+        seen.add(a.href);
+        (out[type] = out[type] || []).push(a.href);
+      }
+      for (const k in out) out[k] = out[k].slice(0, 2);
+      return out;
+    };
+    const inBox = box ? collect(box) : {};
+    return Object.keys(inBox).length ? inBox : collect(document);
   }
 
   function categories(container) {
@@ -76,7 +86,7 @@
       kind,
       buttonText: txt(el),
       bannerText: (box?.innerText || "").replace(/\s+/g, " ").trim().slice(0, 600),
-      links: policyLinks(),
+      links: policyLinks(box),
       categories: categories(box),
       cmp: cmpName(),
     };
@@ -86,8 +96,14 @@
   document.addEventListener("click", (e) => {
     const el = e.target.closest('button,input[type="submit"],input[type="button"],a,[role="button"]');
     if (!el) return;
-    const t = txt(el);
+    const t = txt(el) || (el.matches(".onetrust-close-btn-handler") ? "Close" : "");
     if (!t || NEG.test(t)) return;
+    if (CLOSE.test(t) || el.matches(".onetrust-close-btn-handler")) {
+      // Only a cookie notice counts, not any dialog's close button.
+      const box = el.closest(KNOWN_CMP) || el.closest(CMP);
+      if (box && (box.matches(KNOWN_CMP) || /\bcookies?\b/i.test(box.innerText || ""))) capture(el, "implied", box);
+      return;
+    }
     const ctx = context(el);
     // Plain links only count inside a consent banner ("Continue reading" is not consent).
     if (el.tagName === "A" && !ctx.consent) return;
