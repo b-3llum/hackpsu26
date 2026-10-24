@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { htmlToText, diffSentences } from "../lib/policy.js";
 import { summarize } from "../lib/summary/summarize.js";
+import { suggestActions } from "../lib/actions/actions.js";
 
 const page = (f) => htmlToText(readFileSync(new URL(`../demo/${f}`, import.meta.url), "utf8"));
 const BANNER = "We use cookies to personalize ads and analytics. By clicking Accept all you agree to our Terms and Privacy Policy.";
@@ -28,4 +29,10 @@ test("diff shows the new clauses", () => {
 test("htmlToText keeps paragraphs apart and drops scripts", () => {
   const t = htmlToText("<header>Menu</header><main><p>One clause</p><script>x()</script><p>Two &amp; three</p></main>");
   assert.equal(t, "One clause\nTwo & three");
+});
+
+test("v2 receipt suggests next actions with drafts", async () => {
+  const summary = await summarize(receipt("terms-v2.html"), { mode: "finance" });
+  const kinds = suggestActions({ domain: "snappix.example", summary, policies: [] }).map((a) => a.kind);
+  for (const k of ["opt_out_sale", "opt_out_ai_training", "arbitration_opt_out", "cancel_before_renewal"]) assert.ok(kinds.includes(k), k);
 });

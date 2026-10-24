@@ -2,7 +2,7 @@
 
 **You click "Agree" hundreds of times a year. Consent Receipts keeps a plain words receipt of what you agreed to, shows the exact clause behind every point, and tells you when the deal changes.**
 
-HackPSU Fall 26 project. See the Devpost page for what was built during the event.
+Prior work: Nafiz built an early prototype of the consent receipt and policy change alert features before HackPSU Fall 26 (HackPSU organizers confirmed importing it is allowed). Everything added during the hackathon (finance mode, cited AI summaries and trust per claim, what to do next actions, and the module refactor) is built in this repo after hacking started and is listed on the Devpost page.
 
 ## What it does
 1. **Captures consent.** Clicking Agree, Accept, Accept all, Allow, or checking an "I agree to the Terms" box saves a receipt: site, page URL, time, button text, banner text, links to the Terms, Privacy, and Cookie policies, and which cookie categories were on or off. Works with generic banners and OneTrust, Cookiebot, TrustArc, and Quantcast, including banners inside iframes. Weak words like "Continue" or "OK" only count inside a consent banner or a sign up form that mentions the terms, so "Continue reading" does not create a receipt.
@@ -10,7 +10,8 @@ HackPSU Fall 26 project. See the Devpost page for what was built during the even
 3. **Finance mode** (on by default) flags fees, interest rate changes, overdraft, late payment, minimum balance, and auto renewal clauses.
 4. **Optional Gemini summary.** Add a Gemini API key in Settings. Gemini must cite a numbered sentence for every point; points with no real source are dropped and lower the trust score. Rule based findings always stay, so the AI can add context but cannot hide a flagged clause. Without a key, or if the call fails, the summary is rule based.
 5. **Watches for changes.** A scheduled check (daily by default) and **Check now** re-fetch every saved policy once per URL. If a policy changed, you get the added and removed sentences, the risk before and after, a Chrome notification, and a badge count.
-6. **Popup.** Receipt cards with a Low, Medium, or High risk badge, expandable points with their sources, change history, JSON export, and a printable receipt.
+6. **What to do next.** Each receipt suggests concrete steps for what it found (opt out of data sale or AI training, opt out of arbitration, cancel before renewal, opt out of overdraft, request deletion, and more), each with the cited sentence, a drafted request you can copy, and a link to the policy.
+7. **Popup.** Receipt cards with a Low, Medium, or High risk badge, expandable points with their sources, change history, JSON export, and a printable receipt.
 
 ## Privacy
 Everything stays in your browser (`chrome.storage.local`). No accounts, servers, analytics, or external scripts. Network requests: (a) the public policy pages you agreed to, fetched without cookies, and (b) only if you add a key, the Gemini API (`generativelanguage.googleapis.com`), which receives the policy text. Content scripts can only report captures; they cannot read or delete receipts.
@@ -40,6 +41,7 @@ python3 -m http.server 8000
 | `content.js` | Consent click detection (classic script, runs in every frame) |
 | `lib/summary/` | `summarize(text, { mode, llm })`: cited claims, risk, trust |
 | `lib/finance/` | Finance detectors and the shared sentence splitter |
+| `lib/actions/` | `suggestActions(receipt)`: what to do next, with drafted requests |
 | `lib/gemini.js` | Gemini `generateContent` adapter used as the `llm` |
 | `lib/policy.js` | HTML to text, hashing, sentence diff |
 | `lib/settings.js` | Settings defaults |

@@ -1,4 +1,5 @@
 import { FINANCE_CATEGORIES } from "../lib/finance/detect.js";
+import { suggestActions } from "../lib/actions/actions.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -25,6 +26,12 @@ function claimItem(g) {
   return `<li class="claim"><details><summary>${esc(g.text)}${tags}</summary>${g.sources.map((s) => `<div class="src">"${esc(s)}"</div>`).join("")}</details></li>`;
 }
 
+function actionItem(a) {
+  const link = a.link ? ` <a href="${esc(a.link)}" target="_blank" rel="noopener">Open policy</a>` : "";
+  const copy = a.draft ? `<button class="copy" data-draft="${esc(a.draft)}">Copy draft</button>` : "";
+  return `<li class="claim"><details><summary>${esc(a.title)}</summary><div class="tiny">${esc(a.why)}</div>${a.sourceSentence ? `<div class="src">"${esc(a.sourceSentence)}"</div>` : ""}${a.draft ? `<pre class="draft">${esc(a.draft)}</pre>` : ""}<div class="btns">${copy}${link}</div></details></li>`;
+}
+
 function trustLine(s) {
   if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy.</div>';
   return `<div class="trust">AI summary, trust ${Math.round((s.trust ?? 0) * 100)}%: claims without a real source sentence were removed. Tap a point to see its source.</div>`;
@@ -34,11 +41,13 @@ function card(r) {
   const s = r.summary || {};
   const risk = riskLabel(s.risk);
   const claims = groupClaims(s.claims || []).map(claimItem).join("") || "<li>Nothing notable detected</li>";
+  const actions = suggestActions(r).map(actionItem).join("");
   const links = (r.policies || []).map((p) => `<li><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.type || "policy")}: ${esc(p.url)}</a>${p.error ? ' <span class="tiny">(could not fetch)</span>' : ""}</li>`).join("") || "<li>No policy links found on the page</li>";
   const cats = (r.categories || []).map((c) => `<li>${c.on ? "✅" : "⬜"} ${esc(c.name)}</li>`).join("");
   const changes = (r.changes || []).map((c) => `<div><b>${fmt(c.ts)}</b> <span class="tiny">risk ${esc(riskLabel(c.riskBefore))} to ${esc(riskLabel(c.riskAfter))}</span><ul>${(c.added || []).slice(0, 6).map((x) => `<li class="added">+ ${esc(x)}</li>`).join("")}${(c.removed || []).slice(0, 4).map((x) => `<li class="removed">${esc(x)}</li>`).join("")}</ul></div>`).join("") || '<div class="tiny">No changes detected yet</div>';
   return `<div class="receipt" data-id="${esc(r.id)}"><div class="row"><div><div class="site">${esc(r.domain)}${r.unread ? '<span class="new">TERMS CHANGED</span>' : ""}</div><div class="date">${fmt(r.ts)} · clicked "${esc(r.buttonText)}"</div></div><span class="badge ${risk}">${risk}</span></div>
   <div class="details"><h3>What you agreed to</h3>${trustLine(s)}<ul class="claims">${claims}</ul>
+  ${actions ? `<h3>What to do next</h3><ul class="claims">${actions}</ul>` : ""}
   ${cats ? `<h3>Cookie categories</h3><ul>${cats}</ul>` : ""}<h3>Policies</h3><ul>${links}</ul><h3>Change history</h3>${changes}
   <div class="btns" style="margin-top:8px"><button class="danger del">Delete receipt</button></div></div></div>`;
 }
@@ -51,6 +60,11 @@ async function render() {
 $("#list").addEventListener("click", async (e) => {
   const c = e.target.closest(".receipt");
   if (!c) return;
+  if (e.target.classList.contains("copy")) {
+    await navigator.clipboard.writeText(e.target.dataset.draft);
+    e.target.textContent = "Copied";
+    return;
+  }
   if (e.target.classList.contains("del")) {
     if (confirm("Delete this receipt?")) { await send({ type: "delete", id: c.dataset.id }); render(); }
     return;

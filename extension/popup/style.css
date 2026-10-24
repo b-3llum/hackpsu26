@@ -26,3 +26,4 @@ a{color:#1a5fb4;word-break:break-all}.added{color:var(--low)}.removed{color:var(
 .tag{font-size:10px;padding:0 5px;border-radius:6px;margin-left:4px;background:#eee;color:var(--mut);font-style:normal}
 .tag.fin{background:#e7f0fd;color:#1a5fb4}.tag.ai{background:#f3e8fd;color:#7b2cbf}
 .trust{font-size:11px;color:var(--mut);margin:2px 0 6px}
+.draft{white-space:pre-wrap;font:inherit;font-size:11px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin:4px 0}
