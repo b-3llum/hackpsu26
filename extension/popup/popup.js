@@ -97,4 +97,11 @@ $("#html").onclick = async () => {
   download("consent-receipts.html", `<!doctype html><meta charset="utf-8"><title>Consent Receipts</title><style>${css} body{max-width:720px;margin:auto}.btns{display:none}</style><h1 style="padding:14px">Consent Receipts</h1>${body}`, "text/html");
 };
 
+// Re-render when receipts change (a Gemini summary arriving, a check finishing), keeping open cards open.
+chrome.storage.onChanged.addListener((changes) => {
+  if (!changes.receipts) return;
+  const open = new Set([...document.querySelectorAll(".receipt.open")].map((c) => c.dataset.id));
+  render().then(() => document.querySelectorAll(".receipt").forEach((c) => { if (open.has(c.dataset.id)) c.classList.add("open"); }));
+});
+
 render();

@@ -27,10 +27,29 @@ function policyFetcher() {
 
 const receiptText = (r) => [r.bannerText, ...r.policies.map((p) => p.text || "")].filter(Boolean).join("\n");
 
-async function summarizeReceipt(r) {
+// Rules only unless `ai` is set, so receipts and alerts never wait on the network.
+async function summarizeReceipt(r, { ai = false } = {}) {
   const s = await getSettings();
-  const llm = geminiLlm({ apiKey: s.geminiKey, model: s.geminiModel });
+  const llm = ai ? geminiLlm({ apiKey: s.geminiKey, model: s.geminiModel }) : null;
   return summarize(receiptText(r), { mode: s.financeMode ? "finance" : "general", llm });
+}
+
+// Replace the instant rules summary with the Gemini one once it arrives. The popup re-renders on the storage change.
+async function upgradeWithAi(ids, changeTs) {
+  const s = await getSettings();
+  if (!s.geminiKey) return;
+  for (const id of ids) {
+    const current = (await getReceipts()).find((x) => x.id === id);
+    if (!current) continue;
+    const summary = await summarizeReceipt(current, { ai: true });
+    if (summary.engine !== "ai") continue;
+    const receipts = await getReceipts();
+    const r = receipts.find((x) => x.id === id);
+    if (!r) continue;
+    r.summary = summary;
+    if (changeTs && r.changes[0]?.ts === changeTs) r.changes[0].riskAfter = summary.risk;
+    await saveReceipts(receipts);
+  }
 }
 
 async function handleCapture(p) {
@@ -52,11 +71,14 @@ async function handleCapture(p) {
   const receipts = await getReceipts();
   receipts.unshift(receipt);
   await saveReceipts(receipts.slice(0, MAX_RECEIPTS));
+  upgradeWithAi([receipt.id]);
 }
 
 async function checkAll() {
   const receipts = await getReceipts();
   const get = policyFetcher();
+  const changedIds = [];
+  const runTs = Date.now();
   let changed = 0;
   for (const r of receipts) {
     let diffs = [];
@@ -74,7 +96,7 @@ async function checkAll() {
     const riskBefore = r.summary?.risk;
     r.summary = await summarizeReceipt(r);
     const change = {
-      ts: Date.now(),
+      ts: runTs,
       urls: diffs.map((d) => d.url),
       added: diffs.flatMap((d) => d.added),
       removed: diffs.flatMap((d) => d.removed),
@@ -84,6 +106,7 @@ async function checkAll() {
     r.changes.unshift(change);
     r.unread = true;
     changed++;
+    changedIds.push(r.id);
     chrome.notifications.create(`cr-${r.id}-${change.ts}`, {
       type: "basic",
       iconUrl: "icons/icon128.png",
@@ -93,12 +116,13 @@ async function checkAll() {
   }
   await saveReceipts(receipts);
   await updateBadge();
+  upgradeWithAi(changedIds, runTs);
   return { checked: receipts.length, changed };
 }
 
 async function resummarizeAll() {
   const receipts = await getReceipts();
-  for (const r of receipts) r.summary = await summarizeReceipt(r);
+  for (const r of receipts) r.summary = await summarizeReceipt(r, { ai: true });
   await saveReceipts(receipts);
   return { updated: receipts.length };
 }
