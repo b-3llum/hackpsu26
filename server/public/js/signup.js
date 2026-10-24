@@ -1,9 +1,11 @@
-import { api, setupPasswordToggles, showFieldErrors, setBusy, safeNext } from "./common.js";
+import { api, setupPasswordToggles, showFieldErrors, setBusy, safeNext, setupGoogle, urlError } from "./common.js";
 
 const form = document.getElementById("signup-form");
 const submit = document.getElementById("submit");
 const formError = document.getElementById("form-error");
 setupPasswordToggles();
+setupGoogle({ showTerms: true });
+if (urlError()) { formError.textContent = urlError(); formError.hidden = false; }
 
 // Keep ?next= (and ?ext=1 from the extension) when switching to the log in page.
 document.getElementById("login-link").search = location.search;

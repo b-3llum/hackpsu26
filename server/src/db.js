@@ -33,6 +33,31 @@ export function openDb(path) {
       id TEXT PRIMARY KEY,
       created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS audio_cache (
+      key TEXT PRIMARY KEY,
+      mp3 BLOB NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS listen_usage (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      day TEXT NOT NULL,
+      count INTEGER NOT NULL,
+      PRIMARY KEY (user_id, day)
+    );
+    CREATE TABLE IF NOT EXISTS oauth_states (
+      state TEXT PRIMARY KEY,
+      verifier TEXT NOT NULL,
+      next TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
   `);
+  // Columns added after the first deploy.
+  ensureColumn(db, "users", "auth0_sub", "TEXT");
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_auth0_sub ON users(auth0_sub) WHERE auth0_sub IS NOT NULL");
   return db;
+}
+
+function ensureColumn(db, table, column, type) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  if (!cols.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
 }

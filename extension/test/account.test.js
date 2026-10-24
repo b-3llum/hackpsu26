@@ -49,3 +49,21 @@ test("refreshAccount updates the plan; signOut clears it", async () => {
   assert.equal(reply.last.url, `${SITE}/api/extension/logout`);
   assert.equal(await getAccount(), null);
 });
+
+test("speakSummary: needs sign in, sends only risk and point texts, surfaces limits", async () => {
+  delete store.account;
+  const { speakSummary, reportChange } = await import("../lib/account.js");
+  assert.equal((await speakSummary({ risk: "high", claims: [] })).status, 401);
+  await setAccount({ token: "t3", email: "a@b.c", plan: "free" });
+  const blobReply = async (url, init) => { reply.last = { url, init }; return { status: 200, ok: true, blob: async () => new Blob(["mp3"]) }; };
+  const ok = await speakSummary({ risk: "high", domain: "secret.example", claims: [{ text: "They can sell your data", sourceSentence: "We sell data." }] }, { fetchImpl: blobReply });
+  assert.ok(ok.audio);
+  const body = JSON.parse(reply.last.init.body);
+  assert.deepEqual(body, { summary: { risk: "high", claims: [{ text: "They can sell your data" }] } });
+  const limited = await speakSummary({ risk: "low", claims: [] }, { fetchImpl: reply(402, { error: "Free accounts get 3 listens a day." }) });
+  assert.deepEqual(limited, { error: "Free accounts get 3 listens a day.", status: 402 });
+  assert.equal(await reportChange({ url: "https://a.com/t", hashAfter: "h" }, { fetchImpl: reply(200, { changes90d: 4 }) }), 4);
+  assert.equal(reply.last.url, `${SITE}/api/changes`);
+  delete store.account;
+  assert.equal(await reportChange({ url: "https://a.com/t", hashAfter: "h" }), null);
+});

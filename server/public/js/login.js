@@ -1,10 +1,12 @@
-import { api, setupPasswordToggles, setBusy, safeNext } from "./common.js";
+import { api, setupPasswordToggles, setBusy, safeNext, setupGoogle, urlError } from "./common.js";
 
 const form = document.getElementById("login-form");
 const submit = document.getElementById("submit");
 const formError = document.getElementById("form-error");
 const fromExtension = new URLSearchParams(location.search).get("ext") === "1";
 setupPasswordToggles();
+setupGoogle({ showTerms: false });
+if (urlError()) { formError.textContent = urlError(); formError.hidden = false; }
 document.getElementById("signup-link").search = location.search;
 if (fromExtension) document.getElementById("lede").textContent = "Log in to connect the Consent Receipts extension.";
 
