@@ -14,13 +14,18 @@ export const FINANCE_LABELS = {
 };
 
 const RULES = {
-  overdraft: /\b(overdraft|overdrawn|overdraw|non[- ]sufficient funds|insufficient funds|NSF)\b/i,
+  // "insufficient funds" or "NSF" alone is often just a failed payment (Netflix: "due to expiration, insufficient
+  // funds, or otherwise ... we may suspend your access"); it counts only next to a charge word or a dollar amount.
+  overdraft: /\b(overdraft|overdrawn|overdraw)\w*\b|\b(non[- ]sufficient funds|insufficient funds|NSF)\b[^.]{0,30}?\b(fees?|charges?)\b|\b(fees?|charges?)\b[^.]{0,30}?\b(non[- ]sufficient funds|insufficient funds|NSF)\b|\b(non[- ]sufficient funds|insufficient funds|NSF)\b[^.]{0,30}?\$\s?\d|\$\s?\d[^.]{0,30}?\b(non[- ]sufficient funds|insufficient funds|NSF)\b/i,
   late_payment: /\b(late (payment|fee|charge)s?|(payment|paid|pay) (is |are )?(late|past due|after the due date)|past[- ]due|delinquen\w*)\b/i,
   minimum_balance: /\b(minimum (daily |average |monthly )?balance|maintain a balance|balance (falls|drops) below)\b/i,
   auto_renewal: /\b(auto(matically)?[- ]?renew\w*|renews? automatically|recurring (charge|billing|payment)s?|until (you )?cancel\w*|continuous subscription)\b/i,
   interest_rate_change: /\b((interest rate|APR|annual percentage rate|rate)s?\b[^.]{0,80}\b(change|vary|varies|variable|increase|adjust|rise|fluctuat)\w*|variable[- ]rate|(change|increase|adjust)\w*\b[^.]{0,40}\b(interest rate|APR))/i,
   // `\$\s?\d` sits outside the `\b(...)` group: `\b` before `$` needs a word character, so " $35" never matched.
-  fee: /\b(fees?|service charges?|surcharges?|penalt(y|ies)|charged\b|charges? (you|a|an)\b|costs?\b)|\$\s?\d/i,
+  // Trailing `\b` so "feedback" is not a fee (DuckDuckGo: "to provide feedback").
+  // `cost` alone is marketing copy ("reduce complexity and cost", CrowdStrike); it counts only with a money context
+  // (an amount, "per month", "costs you") within 40 characters after it.
+  fee: /\b(fees?|service charges?|surcharges?|penalt(y|ies)|charged|charges? (you|a|an))\b|\bcosts?\b(?=[^.]{0,40}?(\$\s?\d|\bper (month|year|week|day|transaction|transfer|use)\b|\b\d+(\.\d+)? ?(USD|dollars)\b))|\bcosts? you\b|\$\s?\d/i,
 };
 
 // Nouns that a negation must point at to cancel a given category, so "no fees" does not also cancel an

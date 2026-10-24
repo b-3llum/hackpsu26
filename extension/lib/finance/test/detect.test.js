@@ -84,3 +84,27 @@ test("hard wrapped and U.S. text keeps sentenceIndex aligned", () => {
   assert.equal(hits[0].sentenceIndex, 1);
   assert.equal(hits[0].sentence, "You may be charged a monthly maintenance fee of $12.");
 });
+
+// Real page regressions (DuckDuckGo privacy, Netflix terms) from the board, Oct 24.
+test("feedback is not a fee", () => {
+  assert.deepEqual(catList("Feedback ."), []);
+  assert.deepEqual(catList("You can choose to provide feedback (such as in a crash report) to help us improve."), []);
+  assert.deepEqual(catList("A $5 fee applies."), ["fee"]);
+  assert.deepEqual(catList("Fees may apply."), ["fee"]);
+});
+
+test("a failed payment is not an overdraft", () => {
+  assert.ok(!catList("If a payment is not successfully settled, due to expiration, insufficient funds, or otherwise, and you do not cancel your subscription, we may suspend your access to the service until we have successfully charged a valid Payment Method.").includes("overdraft"));
+  assert.ok(catList("We charge a $35 fee for each item returned for insufficient funds.").includes("overdraft"));
+  assert.ok(catList("An NSF fee of $30 applies.").includes("overdraft"));
+  assert.ok(catList("Insufficient funds items are charged $34 each.").includes("overdraft"));
+  assert.ok(catList("If your account is overdrawn, we may close it.").includes("overdraft"));
+});
+
+test("cost without a money context is not a fee", () => {
+  assert.deepEqual(detectFinance("Unify security and IT on one platform to reduce complexity and cost."), []);
+  assert.deepEqual(detectFinance("Our tools lower your total cost of ownership."), []);
+  assert.ok(detectFinance("Premium costs $9.99 per month.").some((h) => h.category === "fee"));
+  assert.ok(detectFinance("Each extra seat costs 5 dollars.").some((h) => h.category === "fee"));
+  assert.ok(detectFinance("Cancelling early costs you the remaining balance.").some((h) => h.category === "fee"));
+});
