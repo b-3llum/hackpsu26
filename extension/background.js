@@ -71,7 +71,7 @@ async function handleCapture(p) {
   const receipts = await getReceipts();
   receipts.unshift(receipt);
   await saveReceipts(receipts.slice(0, MAX_RECEIPTS));
-  upgradeWithAi([receipt.id]);
+  upgradeWithAi([receipt.id]).catch((e) => console.warn("Gemini upgrade failed", e));
 }
 
 async function checkAll() {
@@ -116,7 +116,7 @@ async function checkAll() {
   }
   await saveReceipts(receipts);
   await updateBadge();
-  upgradeWithAi(changedIds, runTs);
+  upgradeWithAi(changedIds, runTs).catch((e) => console.warn("Gemini upgrade failed", e));
   return { checked: receipts.length, changed };
 }
 
