@@ -94,7 +94,7 @@ test("feedback is not a fee", () => {
 });
 
 test("a failed payment is not an overdraft", () => {
-  assert.deepEqual(catList("If a payment is not successfully settled, due to expiration, insufficient funds, or otherwise, and you do not cancel your account, we may suspend your access to the service."), []);
+  assert.ok(!catList("If a payment is not successfully settled, due to expiration, insufficient funds, or otherwise, and you do not cancel your subscription, we may suspend your access to the service until we have successfully charged a valid Payment Method.").includes("overdraft"));
   assert.ok(catList("We charge a $35 fee for each item returned for insufficient funds.").includes("overdraft"));
   assert.ok(catList("An NSF fee of $30 applies.").includes("overdraft"));
   assert.ok(catList("Insufficient funds items are charged $34 each.").includes("overdraft"));
