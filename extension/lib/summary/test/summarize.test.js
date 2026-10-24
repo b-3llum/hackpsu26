@@ -46,6 +46,7 @@ test("a negated clause does not hide a real one in the same sentence", async () 
   const loc = await summarize("We collect your precise location, but we never sell it.");
   assert.ok(loc.claims.some((c) => c.category === "location"));
   assert.deepEqual((await summarize("We do not sell your personal information.")).claims, []);
+  assert.deepEqual((await summarize("CrowdStrike does not collect, share or sell sensitive personal data.")).claims, []);
 });
 
 test("sharing with service providers is not selling", async () => {
