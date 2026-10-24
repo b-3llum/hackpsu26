@@ -15,10 +15,13 @@ export const GENERAL_LABELS = {
 const GENERAL_RULES = {
   // Selling always counts; sharing only with outside parties, not with "service providers" who run the service.
   data_sold: /\b(sell|sold|sale of|rent)\w*\b[^.]{0,60}\b(data|information)\b|\b(share|disclose)\w*\b[^.]{0,60}\b(third[- ]part(y|ies)|advertis\w*|marketing partners|business partners|data brokers)\b/i,
-  tracking: /\b(cookies?|pixels?|web beacons?|tracking technolog\w*|track\w*\b[^.]{0,30}\b(across|activity)|cross[- ](site|device)|targeted advertising)\b/i,
-  location: /\b(precise |approximate |geo)?location (data|information)\b|\b(your|precise|approximate|real[- ]time) location\b|\bgeolocation\b|\bGPS\b/i,
+  // Cookies alone are not tracking ("Cookie Preferences", "anonymous cookies"); they count when tied to ads or analytics.
+  tracking: /\b(pixels?|web beacons?|tracking technolog\w*|track\w*\b[^.]{0,30}\b(across|activity|you)|cross[- ](site|device)|targeted advertising|interest[- ]based (ads|advertising)|third[- ]party (cookies|trackers))\b|\bcookies?\b[^.]{0,80}\b(advertis\w*|ads|personaliz\w*|analytics|marketing)\b|\b(advertis\w*|ads|personaliz\w*|analytics|marketing)\b[^.]{0,80}\bcookies?\b/i,
+  // Needs a collection verb: "quality may be affected by your location" is not collection.
+  location: /\b(collect|use|access|track|obtain|gather|process|receive|record|share)\w*\b[^.]{0,50}\blocation\b|\blocation (data|information)\b[^.]{0,50}\b(collect|use|access|track|obtain|gather|process|receive|record|share)\w*|\bgeolocation\b|\bGPS\b/i,
   biometrics: /\b(biometric\w*|face ?prints?|facial (recognition|geometry)|voice ?prints?|fingerprints?)\b/i,
-  retention: /\b(retain|keep|store)\w*\b[^.]{0,60}\b(as long as|indefinitely|after you (close|delete)|for \d+ (years?|months?))\b/i,
+  // "as long as necessary" is the norm, not a risk.
+  retention: /\b(retain|keep|store)\w*\b[^.]{0,60}\b(indefinitely|after you (close|delete)|for \d+ (years?|months?))\b/i,
   arbitration: /\b(binding arbitration|arbitrat\w+|class action waiver|waive\w*\b[^.]{0,30}\b(jury|class action))\b/i,
   ai_training: /\b(train\w*|improve)\b[^.]{0,40}\b(artificial intelligence|AI|machine learning|models?)\b/i,
   terms_change: /\b(change|modify|update|amend|revise)\w*\b[^.]{0,40}\b(these terms|this (policy|agreement)|terms of (service|use))\b|\bat any time\b[^.]{0,40}\b(without notice)\b/i,
@@ -29,7 +32,8 @@ const HIGH = new Set(["data_sold", "biometrics", "arbitration", "ai_training", "
 const MEDIUM = new Set(["tracking", "location", "retention", "auto_renewal", "fee", "late_payment", "minimum_balance"]);
 
 // "We never sell your data", "we do not use your content to train AI".
-const NEGATED_ACTION = /\b(never|not|no|don't|won't|doesn't)\b[^.,;]{0,20}\b(sell|rent|share|disclose|track|collect|use|train|retain|keep|store)\w*/i;
+// Accepts curly apostrophes ("don’t") as pages often use them.
+const NEGATED_ACTION = /\b(never|not|no|don[’']t|won[’']t|doesn[’']t|didn[’']t)\b[^.,;]{0,20}\b(sell|sold|rent|share|disclose|track|collect|use|train|retain|keep|store)\w*/i;
 const NEGATABLE = new Set(["data_sold", "tracking", "location", "biometrics", "ai_training", "retention"]);
 
 // Negation only cancels a category when every clause that matches it is negated, so
