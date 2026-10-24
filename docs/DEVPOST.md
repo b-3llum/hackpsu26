@@ -17,14 +17,21 @@ Consent Receipts is a Chrome extension that:
 - Finance mode flags fees, interest rate changes, overdraft terms, and auto renewals in bank, loan, and subscription terms.
 - Checks your saved policies daily (or on demand), shows a diff of what changed, and notifies you.
 - Suggests what to do next for each receipt (opt out of data sale or AI training, opt out of arbitration, cancel before renewal, opt out of overdraft, request deletion), each with the cited sentence, a drafted request you can copy, and a link to the policy.
-- Keeps all data local in your browser. Export receipts as JSON or a printable receipt.
+- Listen to this receipt: one tap reads the summary and flagged clauses aloud with ElevenLabs, for people who would rather hear terms than read them (3 free plays a day, unlimited on Pro).
+- Terms change tracker: signed in extensions report policy changes, and the stored events carry no user id, account, or IP, stored in Tiger Data (Timescale). A public page at https://whatyousignupfor.us/changes shows what changed this week and whether risk went up or down, and receipts show how often a policy changed in the last 90 days.
+- Continue with Google through Auth0, linked to the same account and subscription.
+- Keeps receipts local in your browser. Export receipts as JSON or a printable receipt.
 
 ## How we built it
 - Chrome extension, Manifest V3, plain ES modules with no dependencies (content script for consent detection, module service worker for policy fetches and scheduled checks, popup UI).
 - Rule based detectors for risk categories and finance terms, with tests.
 - Gemini API (`gemini-3.5-flash-lite` via `generateContent`, JSON output) for cited summaries, run on our server for Pro accounts, falling back to rules when the call fails.
 - Website at https://whatyousignupfor.us: accounts, Stripe test mode billing ($3 per month Pro), and the Pro summary API, on a Vultr VM (Node, Express, SQLite, Caddy, Cloudflare).
-- Local storage only; no backend.
+- ElevenLabs text to speech for Listen, called only from our server so the key never ships in the extension.
+- Tiger Data (Timescale) hypertable for anonymous policy change events behind `GET /api/changes`; accounts stay in SQLite.
+- Auth0 for Continue with Google (OAuth code flow with state and PKCE).
+- Each integration is off until its key is set, so the site never depends on it.
+- Receipts stay in local storage; the server only holds accounts, cached summaries, and anonymous change events.
 - 51 node tests, plus an end to end run of the demo in Chrome with the extension loaded.
 
 ## Prior work disclosure
@@ -47,17 +54,20 @@ TODO: fill in Sunday morning.
 ## Tracks
 - HackPSU Grand Prize
 - FNB Challenge: Trust, Decisions and Financial Confidence (cited summaries show what to trust; finance mode and next actions turn it into confident action)
-- Nittany AI Challenge (Gemini summaries that must cite their sources, with a rules fallback)
+- Nittany AI Challenge (Gemini summaries that must cite their sources, with a rules fallback; ElevenLabs Listen makes receipts accessible to people who prefer audio)
 - TODO: General Track: Mystery Stack, if the revealed stack fits
 
 ## Built with
-javascript, chrome-extension, manifest-v3, gemini-api, node.js, express, sqlite, stripe, vultr, caddy, cloudflare
+javascript, chrome-extension, manifest-v3, gemini-api, node.js, express, sqlite, stripe, vultr, caddy, cloudflare, elevenlabs, timescale, tiger-data, auth0
 
 ## Open source and services used (citations, required by the HackPSU rules)
 - Express (https://expressjs.com) and the Stripe Node library (https://github.com/stripe/stripe-node) on the server
 - Node.js built in modules: node:sqlite, node:crypto (scrypt), node:test
 - Caddy (https://caddyserver.com) for HTTPS, on a Vultr VM; Cloudflare in front of the domain
 - Google Gemini API (gemini-3.5-flash-lite) for Pro summaries; Stripe Checkout and Billing Portal in test mode
+- ElevenLabs text to speech API (https://elevenlabs.io) for Listen
+- Tiger Data / Timescale (https://www.tigerdata.com) for the terms change tracker
+- Auth0 (https://auth0.com) for Continue with Google
 - Inter typeface (Google Fonts)
 - Puppeteer with Chrome for Testing for end to end tests (development only, not shipped)
 - Everything else (extension, rules, finance detectors, summaries, server, pages) was written for this project.

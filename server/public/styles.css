@@ -200,3 +200,9 @@ a { color: inherit; }
 .btn-google svg { width: 18px; height: 18px; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--faint); font-size: 14px; margin: 20px 0; }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* Terms change tracker (/changes) */
+.changes-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.changes-item { padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
+.changes-item:first-child { border-top: 0; }
+.changes-item .hint { margin: 4px 0 0; }
