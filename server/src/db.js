@@ -53,6 +53,10 @@ export function openDb(path) {
   `);
   // Columns added after the first deploy.
   ensureColumn(db, "users", "auth0_sub", "TEXT");
+  // Rows left behind by deletes made without foreign keys on (for example from the sqlite3 shell). User ids can be
+  // reused, so an orphan session or listen count would otherwise attach to the next new account.
+  db.exec(`DELETE FROM sessions WHERE user_id NOT IN (SELECT id FROM users);
+           DELETE FROM listen_usage WHERE user_id NOT IN (SELECT id FROM users);`);
   db.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_auth0_sub ON users(auth0_sub) WHERE auth0_sub IS NOT NULL");
   return db;
 }
