@@ -86,3 +86,16 @@ test("scoreRisk thresholds", () => {
   assert.equal(scoreRisk([{ category: "tracking" }, { category: "location" }]), "medium");
   assert.equal(scoreRisk([{ category: "arbitration" }, { category: "data_sold" }]), "high");
 });
+
+test("ai categories outside the allowed list become other", async () => {
+  let prompt;
+  const llm = async (p) => { prompt = p; return JSON.stringify({ claims: [
+    { text: "Terms can change", category: "rate_changes", sourceIndex: 4 },
+    { text: "Arbitration", category: "arbitration", sourceIndex: 2 },
+  ] }); };
+  const r = await summarize(PRIVACY, { llm });
+  assert.match(prompt, /data_sold, tracking/);
+  assert.ok(!/overdraft/.test(prompt.split("\n").find((l) => l.startsWith("Use one of"))), "finance categories only in finance mode");
+  assert.equal(r.claims.find((c) => c.text === "Terms can change").category, "other");
+  assert.equal(r.claims.find((c) => c.text === "Arbitration").category, "arbitration");
+});

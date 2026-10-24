@@ -7,7 +7,7 @@
 <label>Check for policy changes every <select id="freqHours"><option value="1">hour</option><option value="6">6 hours</option><option value="24">day</option><option value="168">week</option></select></label>
 <h3>Optional AI summaries (Gemini)</h3>
 <p class="tiny">Leave the key blank to keep everything local with the rule based summarizer. With a key, policy text is sent only to the Gemini API. Every AI point must cite a sentence from the policy; points without a real source are dropped, and rule based findings are always shown too.</p>
-<label>Gemini API key <input type="password" id="geminiKey" placeholder="AIza..." autocomplete="off"></label>
+<label>Gemini API key <input type="password" id="geminiKey" placeholder="Paste your Gemini API key" autocomplete="off"></label>
 <label>Model <input type="text" id="geminiModel"></label>
 <div class="btns"><button class="primary" id="save">Save</button><button id="resum">Re summarize all receipts</button><span id="msg" class="tiny"></span></div>
 <h3>Demo tools</h3>
