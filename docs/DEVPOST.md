@@ -22,7 +22,8 @@ Consent Receipts is a Chrome extension that:
 ## How we built it
 - Chrome extension, Manifest V3, plain ES modules with no dependencies (content script for consent detection, module service worker for policy fetches and scheduled checks, popup UI).
 - Rule based detectors for risk categories and finance terms, with tests.
-- Gemini API (`gemini-3.8-flash` via `generateContent`, JSON output) for cited summaries, falling back to rules when no key is set or the call fails.
+- Gemini API (`gemini-3.5-flash-lite` via `generateContent`, JSON output) for cited summaries, run on our server for Pro accounts, falling back to rules when the call fails.
+- Website at https://whatyousignupfor.us: accounts, Stripe test mode billing ($3 per month Pro), and the Pro summary API, on a Vultr VM (Node, Express, SQLite, Caddy, Cloudflare).
 - Local storage only; no backend.
 - 51 node tests, plus an end to end run of the demo in Chrome with the extension loaded.
 
@@ -50,9 +51,19 @@ TODO: fill in Sunday morning.
 - TODO: General Track: Mystery Stack, if the revealed stack fits
 
 ## Built with
-javascript, chrome-extension, manifest-v3, gemini-api, node-test
+javascript, chrome-extension, manifest-v3, gemini-api, node.js, express, sqlite, stripe, vultr, caddy, cloudflare
+
+## Open source and services used (citations, required by the HackPSU rules)
+- Express (https://expressjs.com) and the Stripe Node library (https://github.com/stripe/stripe-node) on the server
+- Node.js built in modules: node:sqlite, node:crypto (scrypt), node:test
+- Caddy (https://caddyserver.com) for HTTPS, on a Vultr VM; Cloudflare in front of the domain
+- Google Gemini API (gemini-3.5-flash-lite) for Pro summaries; Stripe Checkout and Billing Portal in test mode
+- Inter typeface (Google Fonts)
+- Puppeteer with Chrome for Testing for end to end tests (development only, not shipped)
+- Everything else (extension, rules, finance detectors, summaries, server, pages) was written for this project.
 
 ## Links and media
 - Repo: https://github.com/b-3llum/hackpsu26 (must be public before judging)
+- Live site: https://whatyousignupfor.us
 - Demo video: TODO (backup in case the live demo fails)
 - Screenshots: TODO (receipt card, risk summary with highlighted source sentence, change alert diff, finance flags)
