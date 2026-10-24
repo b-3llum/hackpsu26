@@ -1,13 +1,50 @@
 {
   "manifest_version": 3,
   "name": "Consent Receipts",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Saves a plain words receipt every time you click Agree, cites the exact clause behind each risk, and alerts you when the terms change.",
-  "permissions": ["storage", "alarms", "notifications"],
-  "host_permissions": ["<all_urls>"],
-  "background": { "service_worker": "background.js", "type": "module" },
-  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content.js"], "run_at": "document_idle", "all_frames": true }],
-  "action": { "default_popup": "popup/popup.html", "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" } },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzWCv1his7JniG8TSjm8JG4Y/XAi07Aklti5pvwhNtoigUP2Awy0o4yvV5bVgNGZH2tq6jlBu3ZVHtnC7TmmTsPZiILsMQRu1YOvLgKuiHoDQkwhdJHm8YpHV9D3pKYZVdrOy2G/Fo86vSfqCnC5Ud91e8SC3VpC3PXrl5xuvmY1q8RjAIhtPS4hyRj3mcwO4VCUKA+Da/soqESdEdklYuyztO2KNB/JHz8+eoNtk+jHJ+CfWWvjvOzdMM5AfIS4ADriazYPEkD9BsTDvpZ5Y1o2SwxGfLw5J9oNTipyeMD52wiPf/70bKAawUSAP70QGqG4yqv2aKfGy6y2GGMvL4QIDAQAB",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "options_page": "options/options.html",
-  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "externally_connectable": {
+    "matches": [
+      "https://whatyousignupfor.us/*"
+    ]
+  }
 }

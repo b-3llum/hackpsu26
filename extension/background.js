@@ -1,7 +1,7 @@
 import { summarize } from "./lib/summary/summarize.js";
-import { geminiLlm } from "./lib/gemini.js";
+import { getAccount, setAccount, serverSummary, refreshAccount, signOut } from "./lib/account.js";
 import { htmlToText, sha256, diffSentences } from "./lib/policy.js";
-import { getSettings } from "./lib/settings.js";
+import { getSettings, SITE } from "./lib/settings.js";
 
 const MAX_TEXT = 60000;
 const MAX_RECEIPTS = 500;
@@ -27,22 +27,21 @@ function policyFetcher() {
 
 const receiptText = (r) => [r.bannerText, ...r.policies.map((p) => p.text || "")].filter(Boolean).join("\n");
 
-// Rules only unless `ai` is set, so receipts and alerts never wait on the network.
-async function summarizeReceipt(r, { ai = false } = {}) {
-  const s = await getSettings();
-  const llm = ai ? geminiLlm({ apiKey: s.geminiKey, model: s.geminiModel }) : null;
-  return summarize(receiptText(r), { mode: s.financeMode ? "finance" : "general", llm });
+const summaryMode = async () => ((await getSettings()).financeMode ? "finance" : "general");
+
+// Rules only, local, instant: receipts and alerts never wait on the network.
+async function summarizeReceipt(r) {
+  return summarize(receiptText(r), { mode: await summaryMode() });
 }
 
 // Replace the instant rules summary with the Gemini one once it arrives. The popup re-renders on the storage change.
 async function upgradeWithAi(ids, changeTs) {
-  const s = await getSettings();
-  if (!s.geminiKey) return;
+  if (!(await getAccount())?.token) return;
   for (const id of ids) {
     const current = (await getReceipts()).find((x) => x.id === id);
     if (!current) continue;
-    const summary = await summarizeReceipt(current, { ai: true });
-    if (summary.engine !== "ai") continue;
+    const summary = await serverSummary(receiptText(current), await summaryMode());
+    if (summary?.engine !== "ai") continue;
     const receipts = await getReceipts();
     const r = receipts.find((x) => x.id === id);
     if (!r) continue;
@@ -122,8 +121,9 @@ async function checkAll() {
 
 async function resummarizeAll() {
   const receipts = await getReceipts();
-  for (const r of receipts) r.summary = await summarizeReceipt(r, { ai: true });
+  for (const r of receipts) r.summary = await summarizeReceipt(r);
   await saveReceipts(receipts);
+  await upgradeWithAi(receipts.map((r) => r.id));
   return { updated: receipts.length };
 }
 
@@ -146,6 +146,8 @@ const HANDLERS = {
   capture: (m) => handleCapture(m.payload).then(() => ({ ok: true })),
   checkNow: () => checkAll(),
   resummarize: () => resummarizeAll(),
+  account: async () => ({ account: await refreshAccount().catch(() => getAccount()) }),
+  signOut: async () => { await signOut(); return { ok: true }; },
   reschedule: () => schedule().then(() => ({})),
   async markRead(m) {
     const r = await getReceipts();
@@ -193,5 +195,23 @@ chrome.runtime.onMessage.addListener((m, sender, reply) => {
   const fromExtensionPage = (sender.url || "").startsWith(chrome.runtime.getURL(""));
   if (!fromExtensionPage && m.type !== "capture") return false;
   h(m).then(reply, (e) => reply({ error: String(e) }));
+  return true;
+});
+
+// The website's account page connects the extension (externally_connectable allows only our site).
+chrome.runtime.onMessageExternal.addListener((m, sender, reply) => {
+  if (sender.origin !== SITE) return false;
+  (async () => {
+    if (m?.type === "status") {
+      const a = await getAccount();
+      return { email: a?.email || null, plan: a?.plan || null };
+    }
+    if (m?.type === "auth" && typeof m.token === "string" && m.user?.email) {
+      await setAccount({ token: m.token, email: m.user.email, name: m.user.name, plan: m.user.plan });
+      if (m.user.plan === "pro") upgradeWithAi((await getReceipts()).map((r) => r.id)).catch((e) => console.warn("Gemini upgrade failed", e));
+      return { ok: true };
+    }
+    return { error: "unknown message" };
+  })().then(reply, (e) => reply({ error: String(e) }));
   return true;
 });
