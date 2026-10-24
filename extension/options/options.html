@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Consent Receipts Settings</title><link rel="stylesheet" href="../popup/style.css">
+<style>main{max-width:560px;margin:30px auto}label{display:block;margin:10px 0}input[type=text],input[type=password],select{width:100%;padding:7px;border:1px solid #ccc;border-radius:6px;font:inherit}</style></head>
+<body><main><div class="receipt" style="font-family:system-ui">
+<h2>Consent Receipts Settings</h2>
+<label><input type="checkbox" id="autoCapture"> Auto-capture receipts when I click Agree / Accept</label>
+<label>Check for policy changes every <select id="freqHours"><option value="1">hour</option><option value="6">6 hours</option><option value="24">day</option><option value="168">week</option></select></label>
+<h3>Optional AI summaries (OpenAI-compatible)</h3>
+<p class="tiny">Leave blank to keep everything 100% local with the rule-based summarizer. If set, policy text is sent only to this endpoint.</p>
+<label>API key <input type="password" id="aiKey" placeholder="sk-..."></label>
+<label>Base URL <input type="text" id="aiBase"></label>
+<label>Model <input type="text" id="aiModel"></label>
+<div class="btns"><button class="primary" id="save">Save</button><span id="msg" class="tiny"></span></div>
+<h3>Demo tools</h3>
+<p class="tiny">For the offline demo: point saved receipts from terms-v1.html to terms-v2.html, then check now. Or fake a stale snapshot on the newest receipt.</p>
+<div class="btns"><button id="v2">Simulate terms change (v1 to v2)</button><button id="stale">Simulate stale snapshot</button></div>
+<h3>Danger zone</h3><button class="danger" id="clear">Clear all receipts</button>
+</div></main><script src="options.js"></script></body></html>
