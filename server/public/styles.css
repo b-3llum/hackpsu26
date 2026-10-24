@@ -195,3 +195,4 @@ a { color: inherit; }
 .window-popup { max-width: 400px; margin: 0 auto; }
 .cta .row { justify-content: center; }
 .cta .lede { color: var(--muted); font-size: 18px; margin: 0 auto 28px; max-width: 560px; }
+.brand-logo { width: 32px; height: 32px; border-radius: 8px; }
