@@ -85,8 +85,8 @@ async function checkAll() {
       if (!pol.url) continue;
       try {
         const now = await get(pol.url);
-        if (pol.hash && now.hash !== pol.hash) diffs.push({ url: pol.url, ...diffSentences(pol.text, now.text) });
-        Object.assign(pol, { text: now.text, hash: now.hash, fetchedAt: now.fetchedAt, error: undefined });
+        if (pol.hash && now.hash !== pol.hash) diffs.push({ url: pol.url, simulated: Boolean(pol.simulated), ...diffSentences(pol.text, now.text) });
+        Object.assign(pol, { text: now.text, hash: now.hash, fetchedAt: now.fetchedAt, error: undefined, simulated: undefined });
       } catch (e) {
         pol.error = String(e);
       }
@@ -97,6 +97,8 @@ async function checkAll() {
     const change = {
       ts: runTs,
       urls: diffs.map((d) => d.url),
+      // Demo tool changes are never reported to the public tracker.
+      simulated: diffs.some((d) => d.simulated),
       added: diffs.flatMap((d) => d.added),
       removed: diffs.flatMap((d) => d.removed),
       riskBefore,
@@ -127,7 +129,7 @@ async function reportChanges(ids, changeTs) {
   for (const id of ids) {
     const r = (await getReceipts()).find((x) => x.id === id);
     const change = r?.changes[0];
-    if (!change || change.ts !== changeTs) continue;
+    if (!change || change.ts !== changeTs || change.simulated) continue;
     const counts = {};
     for (const url of change.urls) {
       const pol = r.policies.find((p) => p.url === url);
@@ -205,7 +207,7 @@ const HANDLERS = {
     const r = await getReceipts();
     if (!r[0]) return { error: "No receipts yet" };
     r[0].policies.forEach((p) => {
-      if (p.text) { p.text = p.text.split("\n").slice(0, -3).join("\n"); p.hash = "stale"; }
+      if (p.text) { p.text = p.text.split("\n").slice(0, -3).join("\n"); p.hash = "stale"; p.simulated = true; }
     });
     await saveReceipts(r);
     return checkAll();
