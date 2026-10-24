@@ -12,14 +12,18 @@ if (!/^https:\/\//.test(site)) { console.error("Pass the public https URL of the
 const stripe = new Stripe(key);
 const log = (...a) => console.error(...a);
 const LOOKUP = "consent_receipts_pro_monthly";
+const TAX_CODE = "txcd_10103000"; // Software as a Service, personal use
 const EVENTS = ["checkout.session.completed", "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"];
 
 let price = (await stripe.prices.list({ lookup_keys: [LOOKUP], active: true, limit: 1 })).data[0];
 if (!price) {
-  const product = await stripe.products.create({ name: "Consent Receipts Pro", description: "AI summaries with citations and trust scores." });
+  const product = await stripe.products.create({ name: "Consent Receipts Pro", description: "AI summaries with citations and trust scores.", tax_code: TAX_CODE });
   price = await stripe.prices.create({ product: product.id, currency: "usd", unit_amount: 300, recurring: { interval: "month" }, lookup_key: LOOKUP });
   log(`created price ${price.id}`);
 } else log(`reusing price ${price.id}`);
+// Accounts with Managed Payments (the default) need a tax code on the product.
+const product = await stripe.products.retrieve(String(price.product));
+if (product.tax_code !== TAX_CODE) { await stripe.products.update(product.id, { tax_code: TAX_CODE }); log(`set tax code on ${product.id}`); }
 
 const url = `${site}/api/stripe/webhook`;
 const existing = (await stripe.webhookEndpoints.list({ limit: 100 })).data.filter((w) => w.url === url);

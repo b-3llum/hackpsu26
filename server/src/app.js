@@ -196,7 +196,8 @@ export function createApp({ db, config, stripe, llm }) {
   app.use((err, req, res, next) => {
     console.error(err);
     if (res.headersSent) return next(err);
-    res.status(500).json({ error: "Something went wrong." });
+    const billing = req.path.startsWith("/api/billing");
+    res.status(billing ? 502 : 500).json({ error: billing ? "Billing is unavailable right now. Try again in a minute." : "Something went wrong." });
   });
 
   async function ensureCustomer(user) {
