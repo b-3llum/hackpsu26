@@ -84,3 +84,19 @@ test("hard wrapped and U.S. text keeps sentenceIndex aligned", () => {
   assert.equal(hits[0].sentenceIndex, 1);
   assert.equal(hits[0].sentence, "You may be charged a monthly maintenance fee of $12.");
 });
+
+// Real page regressions (DuckDuckGo privacy, Netflix terms) from the board, Oct 24.
+test("feedback is not a fee", () => {
+  assert.deepEqual(catList("Feedback ."), []);
+  assert.deepEqual(catList("You can choose to provide feedback (such as in a crash report) to help us improve."), []);
+  assert.deepEqual(catList("A $5 fee applies."), ["fee"]);
+  assert.deepEqual(catList("Fees may apply."), ["fee"]);
+});
+
+test("a failed payment is not an overdraft", () => {
+  assert.deepEqual(catList("If a payment is not successfully settled, due to expiration, insufficient funds, or otherwise, and you do not cancel your account, we may suspend your access to the service."), []);
+  assert.ok(catList("We charge a $35 fee for each item returned for insufficient funds.").includes("overdraft"));
+  assert.ok(catList("An NSF fee of $30 applies.").includes("overdraft"));
+  assert.ok(catList("Insufficient funds items are charged $34 each.").includes("overdraft"));
+  assert.ok(catList("If your account is overdrawn, we may close it.").includes("overdraft"));
+});
