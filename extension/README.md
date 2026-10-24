@@ -2,7 +2,7 @@
 
 **You click "Agree" hundreds of times a year. Consent Receipts keeps a plain-words receipt of what you gave away, and tells you when the deal changes.**
 
-Built at HackPSU Fall 26.
+Prior work: Nafiz built an early prototype of the consent receipt and policy change alert features before HackPSU Fall 26 (HackPSU organizers confirmed importing it is allowed). Everything added during the hackathon (finance mode, cited AI summaries and trust per claim, what to do next actions, and the module refactor) is built in this repo after hacking started and is listed on the Devpost page.
 
 ## What it does
 1. **Captures consent.** When you click Agree, Accept, Accept all, Allow, I agree, Sign up, or check a "I agree to the Terms" box, the extension saves: site, page URL, time, button text, nearby banner text, links to Terms / Privacy / Cookie policies, and which cookie categories were on or off. It works with generic banners and common CMPs (OneTrust, Cookiebot, TrustArc, Quantcast).
@@ -17,13 +17,13 @@ Everything stays in your browser (`chrome.storage.local`). No accounts, no serve
 ## Install
 1. Open `chrome://extensions`
 2. Turn on **Developer mode** (top right)
-3. Click **Load unpacked** and select the `consent-receipts` folder
+3. Click **Load unpacked** and select the `extension` folder
 4. Pin the 🧾 icon
 
 ## Offline demo (for judges)
 Content scripts do not run on `file://` pages by default, so serve the demo locally:
 ```
-cd consent-receipts/demo
+cd extension/demo
 python3 -m http.server 8000
 ```
 Open `http://localhost:8000/index.html`, click **Accept all** on the cookie banner. Open the popup: a SnapPix receipt appears (Medium risk).
