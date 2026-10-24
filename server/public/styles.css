@@ -193,3 +193,5 @@ a { color: inherit; }
 .mt-20 { margin-top: 20px; }
 .row-center { justify-content: center; }
 .window-popup { max-width: 400px; margin: 0 auto; }
+.cta .row { justify-content: center; }
+.cta .lede { color: var(--muted); font-size: 18px; margin: 0 auto 28px; max-width: 560px; }
