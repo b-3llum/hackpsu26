@@ -1,0 +1,5 @@
+# Cloudflare proxies to this origin with SSL mode Full; Caddy gets a Let's Encrypt certificate over HTTP-01.
+whatyousignupfor.us {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}

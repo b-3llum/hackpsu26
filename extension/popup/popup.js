@@ -33,7 +33,7 @@ function actionItem(a) {
 }
 
 function trustLine(s) {
-  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy.</div>';
+  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy. <a href="#" class="pro-link">AI summaries with Pro</a></div>';
   return `<div class="trust">AI summary, trust ${Math.round((s.trust ?? 0) * 100)}%: claims without a real source sentence were removed. Tap a point to see its source.</div>`;
 }
 
@@ -60,6 +60,11 @@ async function render() {
 $("#list").addEventListener("click", async (e) => {
   const c = e.target.closest(".receipt");
   if (!c) return;
+  if (e.target.classList.contains("pro-link")) {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+    return;
+  }
   if (e.target.classList.contains("copy")) {
     await navigator.clipboard.writeText(e.target.dataset.draft);
     e.target.textContent = "Copied";

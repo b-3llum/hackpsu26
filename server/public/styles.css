@@ -187,3 +187,11 @@ a { color: inherit; }
   .card-pad, .panel { padding: 22px; }
   .header-actions .link { display: none; }
 }
+
+/* Small utilities (inline style attributes are blocked by the CSP) */
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.row-center { justify-content: center; }
+.window-popup { max-width: 400px; margin: 0 auto; }
+.cta .row { justify-content: center; }
+.cta .lede { color: var(--muted); font-size: 18px; margin: 0 auto 28px; max-width: 560px; }

@@ -21,13 +21,17 @@
     <p>Your receipts, the sites they came from, rule based summaries, change alerts, finance flags, and suggested actions are stored locally by the extension. They are not sent to us. You can export them from the extension.</p>
     <h2>What your account stores</h2>
     <ul>
-      <li>Your email address.</li>
+      <li>Your name and email address.</li>
       <li>A scrypt hash of your password. We never store the password itself.</li>
+      <li>Your plan (Free or Pro), your subscription status, and your renewal date.</li>
       <li>Your Stripe customer ID, if you start Pro checkout.</li>
+      <li>If you connect the extension, a sign in token stored in the extension. Our server keeps only a hash of that token.</li>
       <li>A session cookie that keeps you signed in.</li>
     </ul>
     <h2>Pro summaries</h2>
     <p>When you ask for a Pro summary, the extension sends the public text of that policy to our server, which asks Gemini for a cited summary. Summaries are cached by policy so the same policy isn't summarized twice. We don't keep a record of which sites you visit.</p>
+    <h2>Hosting</h2>
+    <p>The website runs behind Cloudflare, which processes requests to deliver it and sees IP addresses like any content delivery network. Our app does not keep request logs.</p>
     <h2>Payments</h2>
     <p>Stripe processes checkout and billing. We don't see or store your card number. During HackPSU Fall 26, checkout runs in Stripe test mode.</p>
     <h2>Cookies</h2>
