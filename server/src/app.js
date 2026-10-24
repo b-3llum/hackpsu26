@@ -207,17 +207,23 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     const key = sha256(script);
     const pro = req.user.plan === "pro";
     if (!listenLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many listens this hour." });
+    const day = new Date().toISOString().slice(0, 10);
     if (!pro) {
-      const day = new Date().toISOString().slice(0, 10);
       const used = db.prepare("SELECT count FROM listen_usage WHERE user_id = ? AND day = ?").get(req.user.id, day)?.count || 0;
       if (used >= FREE_LISTENS_PER_DAY) return res.status(402).json({ error: `Free accounts get ${FREE_LISTENS_PER_DAY} listens a day. Upgrade to Pro for unlimited.`, plan: "free" });
-      db.prepare("INSERT INTO listen_usage (user_id, day, count) VALUES (?, ?, 1) ON CONFLICT(user_id, day) DO UPDATE SET count = count + 1").run(req.user.id, day);
     }
     let mp3 = db.prepare("SELECT mp3 FROM audio_cache WHERE key = ?").get(key)?.mp3;
     if (!mp3) {
-      mp3 = await speech(script);
+      try {
+        mp3 = await speech(script);
+      } catch (e) {
+        console.error("speech", e.message);
+        return res.status(502).json({ error: "Listening is not available right now. Try again in a minute." });
+      }
       db.prepare("INSERT OR REPLACE INTO audio_cache (key, mp3, created_at) VALUES (?, ?, ?)").run(key, mp3, Date.now());
     }
+    // Only listens that play count toward the free limit.
+    if (!pro) db.prepare("INSERT INTO listen_usage (user_id, day, count) VALUES (?, ?, 1) ON CONFLICT(user_id, day) DO UPDATE SET count = count + 1").run(req.user.id, day);
     res.set({ "Content-Type": "audio/mpeg", "Cache-Control": "private, max-age=86400" }).send(Buffer.from(mp3));
   });
 

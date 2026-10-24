@@ -51,6 +51,11 @@ test("speak: off without a key, 3 free listens a day, cached audio, unlimited Pr
   s.db.prepare("UPDATE users SET plan = 'pro'").run();
   assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY }, auth: token })).status, 200);
   assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY } })).status, 401);
+  // A failing provider returns 502 and does not use up a free listen.
+  const broken = await setup({ speech: async () => { throw new Error("ElevenLabs 401"); } }); t.after(broken.close);
+  const b = await broken.signup();
+  for (let i = 0; i < 4; i++) assert.equal((await broken.call("/api/speak", { body: { summary: SUMMARY }, auth: b.token })).status, 502);
+  assert.equal(broken.db.prepare("SELECT count(*) AS n FROM listen_usage").get().n, 0);
   const off = await setup(); t.after(off.close);
   const o = await off.signup();
   assert.equal((await off.call("/api/speak", { body: { summary: SUMMARY }, auth: o.token })).status, 503);
