@@ -1,53 +1,56 @@
-# 🧾 Consent Receipts
+# Consent Receipts
 
-**You click "Agree" hundreds of times a year. Consent Receipts keeps a plain-words receipt of what you gave away, and tells you when the deal changes.**
+**You click "Agree" hundreds of times a year. Consent Receipts keeps a plain words receipt of what you agreed to, shows the exact clause behind every point, and tells you when the deal changes.**
 
-Built at HackPSU Fall 26.
+HackPSU Fall 26 project. See the Devpost page for what was built during the event.
 
 ## What it does
-1. **Captures consent.** When you click Agree, Accept, Accept all, Allow, I agree, Sign up, or check a "I agree to the Terms" box, the extension saves: site, page URL, time, button text, nearby banner text, links to Terms / Privacy / Cookie policies, and which cookie categories were on or off. It works with generic banners and common CMPs (OneTrust, Cookiebot, TrustArc, Quantcast).
-2. **Writes a receipt in plain words.** It fetches the linked policies, stores a trimmed text snapshot plus a SHA-256 hash, and lists "You agreed to: ..." items such as data sold or shared, ad tracking, location, contacts, biometrics, retention period, arbitration and class action waiver, auto-renewal, AI training on your content, children, and terms that can change without notice. "Good news" items (like account deletion rights) are shown too. Each receipt gets a **Low / Medium / High** risk badge with the top reasons.
-3. **Watches for changes.** A daily alarm (configurable) and a **Check now** button re-fetch every saved policy. If the hash changed, it diffs the sentences (added and removed), re-summarizes, shows a Chrome notification "Terms changed on example.com", and adds a badge count. Every receipt keeps its change history with the risk before and after.
-4. **Popup.** Receipt-style cards, click to expand, export JSON, export a printable HTML receipt, delete a receipt.
-5. **Options.** Auto-capture toggle, check frequency, optional AI key / base URL / model, clear all data, demo tools.
+1. **Captures consent.** Clicking Agree, Accept, Accept all, Allow, or checking an "I agree to the Terms" box saves a receipt: site, page URL, time, button text, banner text, links to the Terms, Privacy, and Cookie policies, and which cookie categories were on or off. Works with generic banners and OneTrust, Cookiebot, TrustArc, and Quantcast, including banners inside iframes. Weak words like "Continue" or "OK" only count inside a consent banner or a sign up form that mentions the terms, so "Continue reading" does not create a receipt.
+2. **Writes a cited summary.** It fetches the linked policies and lists what you agreed to in plain words: data sold or shared with third parties, tracking, location, biometrics, retention, arbitration, AI training on your content, and terms that can change. **Every point shows the sentence it came from.** Negations are handled ("we never sell your data" is not flagged).
+3. **Finance mode** (on by default) flags fees, interest rate changes, overdraft, late payment, minimum balance, and auto renewal clauses.
+4. **Optional Gemini summary.** Add a Gemini API key in Settings. Gemini must cite a numbered sentence for every point; points with no real source are dropped and lower the trust score. Rule based findings always stay, so the AI can add context but cannot hide a flagged clause. Without a key, or if the call fails, the summary is rule based.
+5. **Watches for changes.** A scheduled check (daily by default) and **Check now** re-fetch every saved policy once per URL. If a policy changed, you get the added and removed sentences, the risk before and after, a Chrome notification, and a badge count.
+6. **Popup.** Receipt cards with a Low, Medium, or High risk badge, expandable points with their sources, change history, JSON export, and a printable receipt.
 
 ## Privacy
-Everything stays in your browser (`chrome.storage.local`). No accounts, no servers, no analytics, no external CDNs. The only network requests are (a) fetching the public policy pages you agreed to, and (b) **only if you add one**, a call to the OpenAI-compatible AI endpoint you configured. Without a key, the summary is made by a local rule-based engine.
+Everything stays in your browser (`chrome.storage.local`). No accounts, servers, analytics, or external scripts. Network requests: (a) the public policy pages you agreed to, fetched without cookies, and (b) only if you add a key, the Gemini API (`generativelanguage.googleapis.com`), which receives the policy text. Content scripts can only report captures; they cannot read or delete receipts.
 
 ## Install
 1. Open `chrome://extensions`
 2. Turn on **Developer mode** (top right)
-3. Click **Load unpacked** and select the `consent-receipts` folder
-4. Pin the 🧾 icon
+3. Click **Load unpacked** and select this `extension` folder
+4. Pin the Consent Receipts icon
+5. Optional: open **Settings**, paste a Gemini API key, click **Save**, then **Re summarize all receipts**
 
 ## Offline demo (for judges)
 Content scripts do not run on `file://` pages by default, so serve the demo locally:
 ```
-cd consent-receipts/demo
+cd extension/demo
 python3 -m http.server 8000
 ```
-Open `http://localhost:8000/index.html`, click **Accept all** on the cookie banner. Open the popup: a SnapPix receipt appears (Medium risk).
+1. Open `http://localhost:8000/index.html` and click **Accept all**. The popup shows a SnapPix receipt (Medium risk). Expand a point to see the sentence it came from.
+2. Open **Settings > Demo tools > Simulate terms change (v1 to v2)**. This repoints the saved Terms link to `terms-v2.html` and runs a check: a notification fires, the badge turns red, and the receipt goes to **High** risk with the new clauses (selling data, location, facial recognition, AI training, arbitration, auto renewal, a late fee).
+3. **Simulate stale snapshot** makes the newest receipt's saved text stale, so the next check reports a change on any real site.
 
-To simulate a terms change: open the extension **Settings > Demo tools > Simulate terms change (v1 to v2)**. This repoints the saved Terms link from `terms-v1.html` to `terms-v2.html` and runs a check. You get a notification, a red badge, and the receipt now shows High risk with the new sentences (selling data, facial recognition, AI training, arbitration). "Simulate stale snapshot" works on any real site too.
+## Code layout
+| Path | What |
+| --- | --- |
+| `manifest.json` | MV3, module service worker |
+| `background.js` | Capture handling, policy fetches, scheduled checks, notifications |
+| `content.js` | Consent click detection (classic script, runs in every frame) |
+| `lib/summary/` | `summarize(text, { mode, llm })`: cited claims, risk, trust |
+| `lib/finance/` | Finance detectors and the shared sentence splitter |
+| `lib/gemini.js` | Gemini `generateContent` adapter used as the `llm` |
+| `lib/policy.js` | HTML to text, hashing, sentence diff |
+| `lib/settings.js` | Settings defaults |
+| `popup/`, `options/` | UI |
+| `demo/` | Offline SnapPix demo with terms v1 and v2 |
 
-## 3 minute pitch script
-- **0:00 Hook.** "Raise your hand if you read the last Terms you agreed to. Nobody does. And companies change them after you click."
-- **0:30 Capture.** Open SnapPix demo, click Accept all. Open popup: a receipt with what you gave away, in plain words, with a risk badge.
-- **1:15 Change alert.** Click Simulate terms change. Notification pops: "Terms changed on localhost". Expand: green lines are new clauses, risk went Medium to High, with reasons like "Your content may be used to train AI".
-- **2:00 Trust.** Everything is local. AI is optional and bring your own key, with a rule-based fallback, so you can trust the tool that tells you what to trust.
-- **2:30 Impact.** Same idea for banks, health portals, schools, and employers: a consent audit trail for people and for compliance teams. Close with export to printable receipt.
+## Tests
+```
+cd extension && npm test
+```
+Runs every `*.test.js` with `node --test` (no dependencies): finance detectors, sentence splitting, cited summaries, the Gemini adapter (mocked), and the full SnapPix demo flow from v1 to v2.
 
-## HackPSU tracks
-- **FNB Challenge: Trust, Decisions and Finance.** Helps people decide what to trust and what to do next when a financial or data deal changes.
-- **Grand Prize.** Working product, live demo, everyday problem.
-- **Nittany AI Challenge.** Meaningful, optional AI summaries with strict JSON output and a safe fallback.
-
-## Next steps
-- Shared, anonymized "terms changed" feed so one user's check helps everyone
-- One-click actions: delete account link, opt-out email drafts, cancel subscription
-- Compare a site's terms against a sector baseline (banks vs fintech apps)
-- Firefox and Safari ports, mobile companion
-- Team mode for compliance officers tracking vendor terms
-
-## Files
-`manifest.json`, `background.js` (service worker), `content.js`, `lib/summarize.js` (rules, diff, HTML to text, also runs in Node), `popup/`, `options/`, `demo/`, `icons/`.
+## Limits
+Rules are keyword and pattern based, not legal advice: expect some misses and false positives on unusual wording. Policies behind a login or rendered only by JavaScript may not be fetched.

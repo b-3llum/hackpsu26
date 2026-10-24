@@ -22,5 +22,5 @@ Rule claims are always kept alongside AI claims, so the AI can add context but c
 ## Tests
 
 ```
-cd extension/lib/summary && node --test
+cd extension && npm test
 ```

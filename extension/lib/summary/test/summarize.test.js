@@ -40,6 +40,13 @@ test("negated statements are not flagged", async () => {
   assert.deepEqual(r.claims, []);
 });
 
+test("sharing with service providers is not selling", async () => {
+  const r = await summarize("We share your information with service providers who help us run the app.");
+  assert.ok(!r.claims.some((c) => c.category === "data_sold"));
+  const s = await summarize("We may share your information with advertising partners.");
+  assert.ok(s.claims.some((c) => c.category === "data_sold"));
+});
+
 test("empty input", async () => {
   assert.deepEqual(await summarize(""), { risk: "low", claims: [], trust: 1, engine: "rules" });
 });

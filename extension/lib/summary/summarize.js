@@ -13,9 +13,10 @@ export const GENERAL_LABELS = {
 };
 
 const GENERAL_RULES = {
-  data_sold: /\b(sell|sale of|rent|share|disclose)\w*\b[^.]{0,60}\b(personal (data|information)|your (data|information)|with (third parties|advertisers|partners))/i,
+  // Selling always counts; sharing only with outside parties, not with "service providers" who run the service.
+  data_sold: /\b(sell|sold|sale of|rent)\w*\b[^.]{0,60}\b(data|information)\b|\b(share|disclose)\w*\b[^.]{0,60}\b(third[- ]part(y|ies)|advertis\w*|marketing partners|business partners|data brokers)\b/i,
   tracking: /\b(cookies?|pixels?|web beacons?|tracking technolog\w*|track\w*\b[^.]{0,30}\b(across|activity)|cross[- ](site|device)|targeted advertising)\b/i,
-  location: /\b(precise |approximate |geo)?location (data|information)\b|\bgeolocation\b|\bGPS\b/i,
+  location: /\b(precise |approximate |geo)?location (data|information)\b|\b(your|precise|approximate|real[- ]time) location\b|\bgeolocation\b|\bGPS\b/i,
   biometrics: /\b(biometric\w*|face ?prints?|facial (recognition|geometry)|voice ?prints?|fingerprints?)\b/i,
   retention: /\b(retain|keep|store)\w*\b[^.]{0,60}\b(as long as|indefinitely|after you (close|delete)|for \d+ (years?|months?))\b/i,
   arbitration: /\b(binding arbitration|arbitrat\w+|class action waiver|waive\w*\b[^.]{0,30}\b(jury|class action))\b/i,
