@@ -23,7 +23,9 @@ const RULES = {
   interest_rate_change: /\b((interest rate|APR|annual percentage rate|rate)s?\b[^.]{0,80}\b(change|vary|varies|variable|increase|adjust|rise|fluctuat)\w*|variable[- ]rate|(change|increase|adjust)\w*\b[^.]{0,40}\b(interest rate|APR))/i,
   // `\$\s?\d` sits outside the `\b(...)` group: `\b` before `$` needs a word character, so " $35" never matched.
   // Trailing `\b` so "feedback" is not a fee (DuckDuckGo: "to provide feedback").
-  fee: /\b(fees?|service charges?|surcharges?|penalt(y|ies)|charged|charges? (you|a|an)|costs?)\b|\$\s?\d/i,
+  // `cost` alone is marketing copy ("reduce complexity and cost", CrowdStrike); it counts only with a money context
+  // (an amount, "per month", "costs you") within 40 characters after it.
+  fee: /\b(fees?|service charges?|surcharges?|penalt(y|ies)|charged|charges? (you|a|an))\b|\bcosts?\b(?=[^.]{0,40}?(\$\s?\d|\bper (month|year|week|day|transaction|transfer|use)\b|\b\d+(\.\d+)? ?(USD|dollars)\b))|\bcosts? you\b|\$\s?\d/i,
 };
 
 // Nouns that a negation must point at to cancel a given category, so "no fees" does not also cancel an

@@ -100,3 +100,11 @@ test("a failed payment is not an overdraft", () => {
   assert.ok(catList("Insufficient funds items are charged $34 each.").includes("overdraft"));
   assert.ok(catList("If your account is overdrawn, we may close it.").includes("overdraft"));
 });
+
+test("cost without a money context is not a fee", () => {
+  assert.deepEqual(detectFinance("Unify security and IT on one platform to reduce complexity and cost."), []);
+  assert.deepEqual(detectFinance("Our tools lower your total cost of ownership."), []);
+  assert.ok(detectFinance("Premium costs $9.99 per month.").some((h) => h.category === "fee"));
+  assert.ok(detectFinance("Each extra seat costs 5 dollars.").some((h) => h.category === "fee"));
+  assert.ok(detectFinance("Cancelling early costs you the remaining balance.").some((h) => h.category === "fee"));
+});
