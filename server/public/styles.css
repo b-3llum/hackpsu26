@@ -196,3 +196,9 @@ a { color: inherit; }
 .cta .row { justify-content: center; }
 .cta .lede { color: var(--muted); font-size: 18px; margin: 0 auto 28px; max-width: 560px; }
 .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
+
+/* Terms change tracker (/changes) */
+.changes-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.changes-item { padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
+.changes-item:first-child { border-top: 0; }
+.changes-item .hint { margin: 4px 0 0; }
