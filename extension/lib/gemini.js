@@ -1,6 +1,7 @@
 // Gemini API adapter. Returns an `llm(prompt) -> Promise<string>` function for lib/summary.
 export const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
-export const DEFAULT_MODEL = "gemini-3.8-flash";
+// Flash-Lite answers in about 1.5 s on the demo terms; gemini-3.8-flash took about 106 s (thinking), too slow for a popup.
+export const DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
 /**
  * @param {{ apiKey: string, model?: string, fetchImpl?: typeof fetch, timeoutMs?: number }} cfg

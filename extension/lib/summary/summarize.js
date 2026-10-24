@@ -70,13 +70,20 @@ export function scoreRisk(claims) {
   return "low";
 }
 
+// Categories the AI may use, so its claims line up with rule claims, money tags, and next actions.
+function allowedCategories(mode) {
+  return [...Object.keys(GENERAL_LABELS), ...(mode === "finance" ? Object.keys(FINANCE_LABELS) : []), "other"];
+}
+
 function buildPrompt(sentences, mode) {
   const numbered = sentences.map((s, i) => `[${i}] ${s}`).join("\n");
   return [
     "You summarize terms of service and privacy or financial policies for a regular person.",
-    `List the points that matter most to the user${mode === "finance" ? ", especially fees, rate changes, overdraft, auto renewal, and penalties" : ""}.`,
+    `List every point that could affect the user's privacy, rights${mode === "finance" ? ", or money (fees, rate changes, overdraft, late payment, minimum balance, auto renewal)" : ""}. One point per clause.`,
+    'Write each point to the user about the company, e.g. "They can sell your data", never "We".',
     "Every point must cite exactly one numbered sentence below that directly supports it. Do not make claims the text does not state.",
-    'Reply with JSON only: {"claims":[{"text":"plain words point, under 15 words","category":"short_snake_case","sourceIndex":0}]}',
+    `Use one of these categories: ${allowedCategories(mode).join(", ")}.`,
+    'Reply with JSON only: {"claims":[{"text":"plain words point, under 15 words","category":"one_of_the_categories","sourceIndex":0}]}',
     "",
     numbered,
   ].join("\n");
@@ -88,7 +95,8 @@ function parseJson(reply) {
 }
 
 // Keep only AI claims that cite a real sentence. Returns [kept, droppedCount].
-function verifyClaims(raw, sentences) {
+function verifyClaims(raw, sentences, mode) {
+  const allowed = new Set(allowedCategories(mode));
   const kept = [];
   let dropped = 0;
   for (const c of Array.isArray(raw) ? raw : []) {
@@ -97,7 +105,7 @@ function verifyClaims(raw, sentences) {
       dropped++;
       continue;
     }
-    kept.push({ text: c.text.trim(), category: String(c.category || "other"), sourceSentence: sentences[i], sourceIndex: i, source: "ai" });
+    kept.push({ text: c.text.trim(), category: allowed.has(c.category) ? c.category : "other", sourceSentence: sentences[i], sourceIndex: i, source: "ai" });
   }
   return [kept, dropped];
 }
@@ -121,7 +129,7 @@ export async function summarize(policyText, opts = {}) {
   if (opts.llm && sentences.length) {
     try {
       const parsed = parseJson(await opts.llm(buildPrompt(sentences, mode)));
-      const [ai, dropped] = verifyClaims(parsed?.claims, sentences);
+      const [ai, dropped] = verifyClaims(parsed?.claims, sentences, mode);
       if (ai.length) {
         // Trust: share of AI claims that cited a real sentence, plus credit when rules agree on the same sentence.
         const corroborated = ai.filter((c) => rules.some((r) => r.sourceIndex === c.sourceIndex)).length;
