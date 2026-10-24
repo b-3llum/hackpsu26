@@ -19,7 +19,10 @@ CREATE INDEX IF NOT EXISTS policy_changes_host_ts ON policy_changes (host, ts DE
 
 export async function openChangeStore(connectionString) {
   if (!connectionString) return null;
-  const pool = new pg.Pool({ connectionString, max: 4, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 });
+  // Always verify the server certificate (Tiger Cloud certificates are publicly trusted), whatever sslmode the URL says.
+  const url = new URL(connectionString);
+  url.searchParams.set("sslmode", "verify-full");
+  const pool = new pg.Pool({ connectionString: url.toString(), max: 4, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 });
   await pool.query(SCHEMA);
   // Hypertable partitioned by time (TimescaleDB 2.13+). Plain Postgres still works without it.
   await pool.query("SELECT create_hypertable('policy_changes', by_range('ts'), if_not_exists => TRUE)")
