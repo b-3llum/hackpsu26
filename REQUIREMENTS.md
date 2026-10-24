@@ -40,11 +40,11 @@ A Chrome extension (Manifest V3) that saves a plain words "receipt" when a user 
 1. Finance mode: flag fees, interest rate changes, overdraft terms, auto renewals in bank, loan, and subscription terms.
 2. "What to do next" actions per receipt: opt out, delete account, cancel before renewal, with a drafted request.
 3. Trust score for AI summaries: show which sentence each claim came from.
+4. AI summary with source citations (OpenAI compatible key or local model), with the rules based summary as the fallback. Interface: `summarize(policyText, { mode: "general" | "finance" })` returns `{ risk, claims: [{ text, category, sourceSentence, sourceIndex }], trust }`. Finance detectors return `{ category, sentence, sentenceIndex }` and are merged into claims.
 
 ### Nice to have
-1. Optional AI summary (OpenAI compatible key or local model), falling back to rules.
-2. Browser wide privacy score (cut unless we are ahead by Sunday morning).
-3. Team or compliance view showing which apps staff agreed to (cut unless we are ahead by Sunday morning).
+1. Browser wide privacy score (cut unless we are ahead by Sunday morning).
+2. Team or compliance view showing which apps staff agreed to (cut unless we are ahead by Sunday morning).
 
 ## 4. Deliverables
 - Working extension in `/extension` with README install steps.
