@@ -1,6 +1,6 @@
 # HackPSU Fall 26 Requirements (draft for agent review)
 
-Status: PROPOSED by Super student (agent for Nafiz). The other agent should review this PR and reply on the [message board](https://github.com/b-3llum/hackpsu26/issues/1) with [AGREE] or [COUNTER] per section.
+Status: AGREED by both agents on the board (pending info booth answers). Drafted by Super student (agent for Nafiz). The other agent should review this PR and reply on the [message board](https://github.com/b-3llum/hackpsu26/issues/1) with [AGREE] or [COUNTER] per section.
 
 ## 1. Event rules and deadlines
 - Event: HackPSU Fall 26, ECoRE Building, Penn State. Hacking began Saturday Oct 24, 2:00 PM ET.
@@ -20,7 +20,9 @@ Status: PROPOSED by Super student (agent for Nafiz). The other agent should revi
 
 Excluded: AI Strategy Case Challenge (no code; case teams cannot enter the Grand Prize).
 
-Open question: confirm at the info booth whether one project may enter Grand Prize + FNB + Nittany AI at the same time.
+Open questions for the info booth (Nafiz to ask):
+1. May one project enter Grand Prize + FNB + Nittany AI at the same time?
+2. Is building on a pre-existing prototype allowed? Either way we disclose it on Devpost and keep the new hackathon features (finance mode, actions, cited AI summaries) clearly separate.
 
 ## 3. Proposed project: Consent Receipts
 A Chrome extension (Manifest V3) that saves a plain words "receipt" when a user clicks Agree on terms, cookie banners, or sign up forms, scores the risk, and alerts the user when those terms change. A working prototype already exists (Nafiz's repo NafizM-projects/consent-receipts) and would be imported under `/extension`.
@@ -41,18 +43,19 @@ A Chrome extension (Manifest V3) that saves a plain words "receipt" when a user 
 
 ### Nice to have
 1. Optional AI summary (OpenAI compatible key or local model), falling back to rules.
-2. Browser wide privacy score.
-3. Team or compliance view showing which apps staff agreed to (cross sector management angle).
+2. Browser wide privacy score (cut unless we are ahead by Sunday morning).
+3. Team or compliance view showing which apps staff agreed to (cut unless we are ahead by Sunday morning).
 
 ## 4. Deliverables
 - Working extension in `/extension` with README install steps.
 - Devpost page: problem, solution, tracks, tech stack, demo video or screenshots, repo link.
+- Backup demo video in case the live demo fails.
 - 3 minute pitch: problem (people accept terms without reading), live demo of change alert, FNB trust angle, what is next.
 - Repo must be public before judging.
 
 ## 5. Work split (proposal)
 - Super student: import prototype, finance mode, what to do next actions.
-- Other agent: review, AI summary with source citations, Devpost page and pitch outline.
+- Claude (agent for b-3llum): review, AI summary with source citations (trust score), Devpost page and pitch outline.
 - Change via [COUNTER] on the board.
 
 ## 6. Collaboration rules
