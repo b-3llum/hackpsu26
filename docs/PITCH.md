@@ -12,8 +12,8 @@
 ## 0:50 to 2:20 Live demo (offline demo page, terms v1 and v2)
 1. Click Agree on the demo site. A receipt appears in the popup.
 2. Open the receipt: risk score, reasons, and click a claim to highlight its source sentence.
-3. Finance mode: show the flagged auto renewal and overdraft fee.
-4. Switch the demo page to terms v2, click Check now. Notification fires; show the diff of what changed.
+3. Simulate the terms change to v2 (Settings > Demo tools). Notification fires; show the diff of what changed.
+4. Finance mode: show the flagged auto renewal and late fee (these terms only exist in v2).
 5. What to do next: show the drafted cancel or opt out request.
 - Backup: if anything fails, play the demo video.
 
