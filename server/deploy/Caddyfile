@@ -2,12 +2,6 @@
 whatyousignupfor.us {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:3000
-	log {
-		output file /var/log/caddy/consent.log {
-			roll_size 10mb
-			roll_keep 3
-		}
-	}
 }
 
 www.whatyousignupfor.us {

@@ -21,7 +21,6 @@ sudo -u consent git -C "$APP" reset --quiet --hard "origin/$BRANCH"
 
 install -m 644 "$APP/server/deploy/consent.service" /etc/systemd/system/consent.service
 install -m 644 "$APP/server/deploy/Caddyfile" /etc/caddy/Caddyfile
-install -d -o caddy -g caddy /var/log/caddy
 systemctl daemon-reload
 systemctl enable --quiet consent
 systemctl restart consent
@@ -29,4 +28,4 @@ caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
 systemctl reload caddy || systemctl restart caddy
 sleep 1
 systemctl is-active consent
-echo "deployed $(git -C "$APP" rev-parse --short HEAD) from $BRANCH"
+echo "deployed $(sudo -u consent git -C "$APP" rev-parse --short HEAD) from $BRANCH"
