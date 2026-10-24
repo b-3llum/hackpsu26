@@ -4,9 +4,9 @@ Goal: a 90 second screen recording that matches the live demo in `docs/PITCH.md`
 
 ## Setup before recording
 1. Load the unpacked extension from `/extension` in Chrome (chrome://extensions, Developer mode, Load unpacked).
-2. Clear old receipts so the popup starts empty (remove and reload the extension, or clear its storage).
+2. Clear old receipts so the popup starts empty (Settings > Clear all receipts).
 3. Serve the demo: `cd extension/demo && python3 -m http.server 8000`.
-4. Optional: add a Gemini key in Settings to show the Gemini summary and trust score. Without a key the rules summary is shown; record whichever one we will demo live.
+4. Recommended: add a Gemini key in Settings so the video shows AI tags and the trust score (the default model gemini-3.5-flash-lite answers in about 1 s). Without a key the rules summary is shown; record whichever one we will demo live.
 5. Pin the extension icon, close other tabs, zoom the page to about 125% so text is readable in the video.
 
 ## Script (about 90 seconds)
@@ -34,6 +34,6 @@ Goal: a 90 second screen recording that matches the live demo in `docs/PITCH.md`
 8. Settings page showing Demo tools and the optional Gemini key field (key hidden).
 
 ## Notes
-- In the demo pages, the finance terms (auto renewal, late fee) only appear in `terms-v2.html`, so finance flags show after the terms change, not on the first receipt. `docs/PITCH.md` lists finance mode as step 3 (before the change); suggest moving it after step 4 there to match.
+- In the demo pages, the finance terms (auto renewal, late fee) only appear in `terms-v2.html`, so finance flags show after the terms change, not on the first receipt. `docs/PITCH.md` now lists finance mode after the change to match.
 - Record at 1280x800 or larger, no personal tabs, bookmarks, or keys visible.
 - Save the final video in the Devpost Links and media section and keep a local copy on the demo laptop.
