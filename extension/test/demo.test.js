@@ -36,3 +36,7 @@ test("v2 receipt suggests next actions with drafts", async () => {
   const kinds = suggestActions({ domain: "snappix.example", summary, policies: [] }).map((a) => a.kind);
   for (const k of ["opt_out_sale", "opt_out_ai_training", "arbitration_opt_out", "cancel_before_renewal"]) assert.ok(kinds.includes(k), k);
 });
+
+test("htmlToText decodes hex entities", () => {
+  assert.equal(htmlToText("<p>we&#x27;ve &#39;ok&#39;</p>"), "we've 'ok'");
+});

@@ -99,3 +99,23 @@ test("ai categories outside the allowed list become other", async () => {
   assert.equal(r.claims.find((c) => c.text === "Terms can change").category, "other");
   assert.equal(r.claims.find((c) => c.text === "Arbitration").category, "arbitration");
 });
+
+test("real site false positives stay quiet", async () => {
+  const quiet = [
+    "We don’t track you through cookies or any other storage methods.",
+    "We have never sold any personal information.",
+    "Video quality may be affected by your location and bandwidth.",
+    "Cookie Preferences",
+    "We offer settings that use anonymous cookies for storage.",
+    "We only keep it for as long as necessary for the stated purpose.",
+  ];
+  for (const t of quiet) assert.deepEqual((await summarize(t)).claims.map((c) => c.category), [], t);
+});
+
+test("real tracking and location still flag", async () => {
+  const cats = async (t) => (await summarize(t)).claims.map((c) => c.category);
+  assert.ok((await cats("We use cookies to show you personalized ads.")).includes("tracking"));
+  assert.ok((await cats("Our partners use third-party cookies to measure ad performance.")).includes("tracking"));
+  assert.ok((await cats("We collect your precise location when the app is open.")).includes("location"));
+  assert.ok((await cats("We may access your device location to suggest nearby stores.")).includes("location"));
+});
