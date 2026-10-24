@@ -32,11 +32,20 @@ const MEDIUM = new Set(["tracking", "location", "retention", "auto_renewal", "fe
 const NEGATED_ACTION = /\b(never|not|no|don't|won't|doesn't)\b[^.,;]{0,20}\b(sell|rent|share|disclose|track|collect|use|train|retain|keep|store)\w*/i;
 const NEGATABLE = new Set(["data_sold", "tracking", "location", "biometrics", "ai_training", "retention"]);
 
+// Negation only cancels a category when every clause that matches it is negated, so
+// "We do not sell your data, but we share it with advertisers." still flags data_sold.
+const CLAUSE_SPLIT = /[,;:]|\b(?:but|however|except|while|whereas|although)\b/i;
+function negatedEverywhere(sentence, re) {
+  const hits = sentence.split(CLAUSE_SPLIT).filter((c) => c && re.test(c));
+  if (!hits.length) return NEGATED_ACTION.test(sentence);
+  return hits.every((c) => NEGATED_ACTION.test(c));
+}
+
 function ruleClaims(sentences) {
   const claims = [];
   sentences.forEach((sentence, i) => {
     for (const [category, re] of Object.entries(GENERAL_RULES)) {
-      if (NEGATABLE.has(category) && NEGATED_ACTION.test(sentence)) continue;
+      if (NEGATABLE.has(category) && negatedEverywhere(sentence, re)) continue;
       if (re.test(sentence)) claims.push({ text: GENERAL_LABELS[category], category, sourceSentence: sentence, sourceIndex: i });
     }
   });

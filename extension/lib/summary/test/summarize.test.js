@@ -40,6 +40,14 @@ test("negated statements are not flagged", async () => {
   assert.deepEqual(r.claims, []);
 });
 
+test("a negated clause does not hide a real one in the same sentence", async () => {
+  const r = await summarize("We do not sell your data, but we share it with advertisers.");
+  assert.ok(r.claims.some((c) => c.category === "data_sold"));
+  const loc = await summarize("We collect your precise location, but we never sell it.");
+  assert.ok(loc.claims.some((c) => c.category === "location"));
+  assert.deepEqual((await summarize("We do not sell your personal information.")).claims, []);
+});
+
 test("sharing with service providers is not selling", async () => {
   const r = await summarize("We share your information with service providers who help us run the app.");
   assert.ok(!r.claims.some((c) => c.category === "data_sold"));
