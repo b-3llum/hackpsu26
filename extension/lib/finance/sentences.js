@@ -5,6 +5,31 @@ const ABBREVIATIONS = [
   "u.s", "u.k", "u.s.a", "a.m", "p.m", "approx", "dept", "est", "fig", "sec", "art", "para", "max", "min",
 ];
 const ABBR = new Set(ABBREVIATIONS);
+// After a dotted acronym like "U.S." these words almost always start a new sentence.
+const SENTENCE_STARTERS = new Set([
+  "We", "You", "Your", "If", "The", "This", "These", "Our", "Any", "All", "Each", "It", "They", "There",
+  "When", "In", "For", "A", "An", "Please", "No", "Unless", "Fees", "Interest",
+]);
+const BULLET = /^\s*(?:[-*\u2022\u25CF\u25AA]|\(?\d{1,3}[.)]|\(?[a-zA-Z][.)])\s+/;
+// Words a hard wrapped line can end on mid sentence.
+const DANGLING = /(?:,|\b(?:a|an|the|of|to|and|or|for|in|on|at|by|with|your|our|any|per|is|are|be|may|will|monthly|annual))$/i;
+
+// Join hard wrapped lines (policies scraped as plain text often wrap at 80 columns). A newline stays a break
+// when the line ends with sentence punctuation or the next line is a bullet; otherwise the lines are joined
+// when the next line starts lowercase, with a digit or "$", or the line ends on a dangling word.
+function unwrap(lines) {
+  const out = [];
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const prev = out.length ? out[out.length - 1] : null;
+    const join = prev !== null && !/[.!?:;]["')\]]*$/.test(prev) && !BULLET.test(raw)
+      && (/^[a-z0-9$(]/.test(line) || DANGLING.test(prev));
+    if (join) out[out.length - 1] = `${prev} ${line}`;
+    else out.push(line);
+  }
+  return out;
+}
 
 function endsWithAbbreviation(chunk) {
   const m = chunk.match(/([A-Za-z][A-Za-z.]*)\.$/);
@@ -25,9 +50,9 @@ function endsWithAbbreviation(chunk) {
 export function splitSentences(text) {
   if (typeof text !== "string" || !text.trim()) return [];
   const out = [];
-  const lines = text.replace(/\r\n?/g, "\n").split(/\n+/);
+  const lines = unwrap(text.replace(/\r\n?/g, "\n").split(/\n+/));
   for (let line of lines) {
-    line = line.replace(/^\s*(?:[-*\u2022\u25CF\u25AA]|\(?\d{1,3}[.)]|\(?[a-zA-Z][.)])\s+/, "").trim();
+    line = line.replace(BULLET, "").trim();
     if (!line) continue;
     let start = 0;
     const re = /[.!?]+["')\]]*(?=\s+|$)/g;
@@ -39,7 +64,9 @@ export function splitSentences(text) {
       if (m[0].startsWith(".") && m[0].length === 1 && endsWithAbbreviation(chunk) && next && !/^[A-Z]{2,}\b/.test(next)) {
         // Abbreviation: only break if next word looks like a new sentence after a non common abbreviation.
         const w = chunk.match(/([A-Za-z.]+)\.$/)[1].toLowerCase();
-        if (!(w === "etc" && /^[A-Z]/.test(next))) continue;
+        const nextWord = (next.match(/^[A-Za-z]+/) || [""])[0];
+        const acronymEnd = /^([a-z]\.)+[a-z]$/.test(w) && SENTENCE_STARTERS.has(nextWord);
+        if (!((w === "etc" && /^[A-Z]/.test(next)) || acronymEnd)) continue;
       }
       if (chunk) out.push(chunk);
       start = end;

@@ -50,3 +50,37 @@ test("negation handling", () => {
 });
 
 test("empty input", () => assert.deepEqual(detectFinance(""), []));
+
+// Regression tests from the PR #5 review.
+const catList = (t) => detectFinance(t).map((h) => h.category);
+
+test("dollar amounts after a space match as fees", () => {
+  assert.deepEqual(catList("A charge of $35 applies to each returned item."), ["fee"]);
+  assert.deepEqual(catList("You will be charged $35."), ["fee"]);
+});
+
+test("negation does not over match", () => {
+  assert.deepEqual(catList("Pay no later than the 1st or a late fee applies."), ["late_payment"]);
+  assert.deepEqual(catList("No fee is charged for the first transfer, and each one after costs $3."), ["fee"]);
+  assert.deepEqual(catList("There are no fees for deposits, and your interest rate may change at any time."), ["interest_rate_change"]);
+  assert.deepEqual(catList("There is no fee for the first transfer then $3 each."), ["fee"]);
+});
+
+test("negation still cancels what it negates", () => {
+  assert.deepEqual(catList("There are no overdraft fees."), []);
+  assert.deepEqual(catList("This account is free of charge."), []);
+  assert.deepEqual(catList("We do not renew your plan automatically."), []);
+});
+
+test("overdraft fee without an amount is not double counted as a generic fee", () => {
+  assert.deepEqual(catList("An overdraft fee will apply if you overdraw your account."), ["overdraft"]);
+  assert.deepEqual(catList("We may charge an overdraft fee of $35."), ["fee", "overdraft"]);
+});
+
+test("hard wrapped and U.S. text keeps sentenceIndex aligned", () => {
+  const text = "These terms are governed by the laws of the U.S. You may be charged a monthly\nmaintenance fee of $12.";
+  const hits = detectFinance(text);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].sentenceIndex, 1);
+  assert.equal(hits[0].sentence, "You may be charged a monthly maintenance fee of $12.");
+});
