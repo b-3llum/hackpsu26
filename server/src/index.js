@@ -3,6 +3,9 @@ import { mkdirSync } from "node:fs";
 import { openDb } from "./db.js";
 import { createApp } from "./app.js";
 import { geminiLlm } from "../../extension/lib/gemini.js";
+import { elevenSpeech } from "./speech.js";
+import { openChangeStore } from "./changes.js";
+import { auth0Client } from "./auth0.js";
 
 const env = process.env;
 const required = ["PUBLIC_URL", "EXTENSION_ID", "GEMINI_API_KEY"];
@@ -27,7 +30,11 @@ const app = createApp({
   },
   stripe: billing ? new Stripe(env.STRIPE_SECRET_KEY) : null,
   llm: () => geminiLlm({ apiKey: env.GEMINI_API_KEY, model: env.GEMINI_MODEL || undefined }),
+  speech: elevenSpeech({ apiKey: env.ELEVENLABS_API_KEY, voiceId: env.ELEVENLABS_VOICE_ID || undefined, model: env.ELEVENLABS_MODEL || undefined }),
+  changes: await openChangeStore(env.TIGER_DATABASE_URL).catch((e) => { console.error("Tiger Data unavailable:", e.message); return null; }),
+  auth0: auth0Client({ domain: env.AUTH0_DOMAIN, clientId: env.AUTH0_CLIENT_ID, clientSecret: env.AUTH0_CLIENT_SECRET, redirectUri: `${env.PUBLIC_URL}/auth/callback` }),
 });
+const on = (k) => (env[k] ? "on" : "off");
 
 const port = Number(env.PORT || 3000);
-app.listen(port, "127.0.0.1", () => console.log(`consent-receipts server on 127.0.0.1:${port}${billing ? "" : " (billing off)"}`));
+app.listen(port, "127.0.0.1", () => console.log(`consent-receipts server on 127.0.0.1:${port} (billing ${billing ? "on" : "off"}, listen ${on("ELEVENLABS_API_KEY")}, tracker ${on("TIGER_DATABASE_URL")}, google ${on("AUTH0_CLIENT_SECRET")})`));

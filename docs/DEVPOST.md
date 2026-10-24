@@ -18,7 +18,7 @@ Consent Receipts is a Chrome extension that:
 - Checks your saved policies daily (or on demand), shows a diff of what changed, and notifies you.
 - Suggests what to do next for each receipt (opt out of data sale or AI training, opt out of arbitration, cancel before renewal, opt out of overdraft, request deletion), each with the cited sentence, a drafted request you can copy, and a link to the policy.
 - Listen to this receipt: one tap reads the summary and flagged clauses aloud with ElevenLabs, for people who would rather hear terms than read them (3 free plays a day, unlimited on Pro).
-- Terms change tracker: extensions report policy changes anonymously (no user id), stored in Tiger Data (Timescale). A public page at https://whatyousignupfor.us/changes shows what changed this week and whether risk went up or down, and receipts show how often a policy changed in the last 90 days.
+- Terms change tracker: signed in extensions report policy changes, and the stored events carry no user id, account, or IP, stored in Tiger Data (Timescale). A public page at https://whatyousignupfor.us/changes shows what changed this week and whether risk went up or down, and receipts show how often a policy changed in the last 90 days.
 - Continue with Google through Auth0, linked to the same account and subscription.
 - Keeps receipts local in your browser. Export receipts as JSON or a printable receipt.
 

@@ -1,5 +1,5 @@
 import { summarize } from "./lib/summary/summarize.js";
-import { getAccount, setAccount, serverSummary, refreshAccount, signOut } from "./lib/account.js";
+import { getAccount, setAccount, serverSummary, refreshAccount, signOut, reportChange } from "./lib/account.js";
 import { htmlToText, sha256, diffSentences } from "./lib/policy.js";
 import { getSettings, SITE } from "./lib/settings.js";
 
@@ -116,7 +116,31 @@ async function checkAll() {
   await saveReceipts(receipts);
   await updateBadge();
   upgradeWithAi(changedIds, runTs).catch((e) => console.warn("Gemini upgrade failed", e));
+  reportChanges(changedIds, runTs).catch((e) => console.warn("Change report failed", e));
   return { checked: receipts.length, changed };
+}
+
+// Signed in users add each change to the anonymous tracker (policy URL, new text hash, risk; no user id),
+// and get back how often that policy changed in the last 90 days across all users.
+async function reportChanges(ids, changeTs) {
+  if (!ids.length || !(await getAccount())?.token) return;
+  for (const id of ids) {
+    const r = (await getReceipts()).find((x) => x.id === id);
+    const change = r?.changes[0];
+    if (!change || change.ts !== changeTs) continue;
+    const counts = {};
+    for (const url of change.urls) {
+      const pol = r.policies.find((p) => p.url === url);
+      const n = await reportChange({ url, hashAfter: pol?.hash, riskBefore: change.riskBefore, riskAfter: r.summary?.risk, added: change.added.length, removed: change.removed.length });
+      if (n != null) counts[url] = n;
+    }
+    if (!Object.keys(counts).length) continue;
+    const receipts = await getReceipts();
+    const fresh = receipts.find((x) => x.id === id);
+    if (!fresh) continue;
+    fresh.policies.forEach((p) => { if (p.url in counts) p.changes90d = counts[p.url]; });
+    await saveReceipts(receipts);
+  }
 }
 
 async function resummarizeAll() {

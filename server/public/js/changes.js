@@ -55,8 +55,8 @@ function renderEvent(ev) {
 
   const meta = el("p", "hint");
   const bits = [formatDate(ev.ts)];
-  if (Number.isFinite(ev.added)) bits.push(`${plural(ev.added, "line")} added`);
-  if (Number.isFinite(ev.removed)) bits.push(`${plural(ev.removed, "line")} removed`);
+  if (Number.isFinite(ev.added)) bits.push(`${plural(ev.added, "sentence")} added`);
+  if (Number.isFinite(ev.removed)) bits.push(`${plural(ev.removed, "sentence")} removed`);
   meta.textContent = bits.filter(Boolean).join(", ");
   const href = safeHttpUrl(ev.url);
   if (href) {

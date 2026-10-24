@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { summarize } from "../../extension/lib/summary/summarize.js";
 import { hashPassword, verifyPassword, DUMMY_HASH, createSession, userForToken, deleteSession, parseCookies, sha256, SESSION_TTL } from "./auth.js";
 import { rateLimiter } from "./ratelimit.js";
+import { receiptScript } from "./speech.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public", import.meta.url));
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,8 +16,11 @@ const PRO_STATUSES = new Set(["active", "trialing"]);
  * @param {{ publicUrl: string, extensionId: string, stripePriceId: string, stripeWebhookSecret: string, secureCookies?: boolean }} o.config
  * @param {object|null} o.stripe Stripe client, or null when billing is not configured
  * @param {(() => ((prompt: string) => Promise<string>) | null)} o.llm returns the Gemini function for summaries
+ * @param {((text: string) => Promise<Buffer>) | null} [o.speech] ElevenLabs text to speech, or null
+ * @param {object|null} [o.changes] Tiger Data change store (see changes.js), or null
+ * @param {object|null} [o.auth0] Auth0 client (see auth0.js), or null
  */
-export function createApp({ db, config, stripe, llm }) {
+export function createApp({ db, config, stripe, llm, speech = null, changes = null, auth0 = null }) {
   const app = express();
   const origin = new URL(config.publicUrl).origin;
   const extensionOrigin = `chrome-extension://${config.extensionId}`;
@@ -71,6 +75,9 @@ export function createApp({ db, config, stripe, llm }) {
   const loginLimit = rateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
   const signupLimit = rateLimiter({ windowMs: 60 * 60 * 1000, max: 10 });
   const summaryLimit = rateLimiter({ windowMs: 60 * 60 * 1000, max: 120 });
+  const listenLimit = rateLimiter({ windowMs: 60 * 60 * 1000, max: 60 });
+  const changeLimit = rateLimiter({ windowMs: 60 * 60 * 1000, max: 200 });
+  const FREE_LISTENS_PER_DAY = 3;
 
   const webUser = (req) => userForToken(db, parseCookies(req.get("cookie")).sid, "web");
   const bearer = (req) => (req.get("authorization") || "").replace(/^Bearer\s+/i, "") || null;
@@ -94,7 +101,13 @@ export function createApp({ db, config, stripe, llm }) {
   const setSessionCookie = (res, token) =>
     res.append("Set-Cookie", `sid=${token}; ${cookieFlags}; Max-Age=${SESSION_TTL.web / 1000}`);
 
-  app.get("/api/config", (req, res) => res.json({ extensionId: config.extensionId, billing: Boolean(stripe) }));
+  app.get("/api/config", (req, res) => res.json({
+    extensionId: config.extensionId,
+    billing: Boolean(stripe),
+    google: Boolean(auth0),
+    listen: Boolean(speech),
+    tracker: Boolean(changes),
+  }));
 
   app.post("/api/signup", async (req, res) => {
     if (!signupLimit.hit(clientIp(req))) return res.status(429).json({ error: "Too many sign ups from this network. Try again later." });
@@ -187,7 +200,96 @@ export function createApp({ db, config, stripe, llm }) {
     res.json({ summary, cached: false });
   });
 
+  // ElevenLabs: read a receipt aloud. 3 listens a day on Free, unlimited (rate limited) on Pro. Audio is cached per script.
+  app.post("/api/speak", requireExt, async (req, res) => {
+    if (!speech) return res.status(503).json({ error: "Listening is not available right now." });
+    const script = receiptScript(req.body?.summary);
+    const key = sha256(script);
+    const pro = req.user.plan === "pro";
+    if (!listenLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many listens this hour." });
+    const day = new Date().toISOString().slice(0, 10);
+    if (!pro) {
+      const used = db.prepare("SELECT count FROM listen_usage WHERE user_id = ? AND day = ?").get(req.user.id, day)?.count || 0;
+      if (used >= FREE_LISTENS_PER_DAY) return res.status(402).json({ error: `Free accounts get ${FREE_LISTENS_PER_DAY} listens a day. Upgrade to Pro for unlimited.`, plan: "free" });
+    }
+    let mp3 = db.prepare("SELECT mp3 FROM audio_cache WHERE key = ?").get(key)?.mp3;
+    if (!mp3) {
+      try {
+        mp3 = await speech(script);
+      } catch (e) {
+        console.error("speech", e.message);
+        return res.status(502).json({ error: "Listening is not available right now. Try again in a minute." });
+      }
+      db.prepare("INSERT OR REPLACE INTO audio_cache (key, mp3, created_at) VALUES (?, ?, ?)").run(key, mp3, Date.now());
+    }
+    // Only listens that play count toward the free limit.
+    if (!pro) db.prepare("INSERT INTO listen_usage (user_id, day, count) VALUES (?, ?, 1) ON CONFLICT(user_id, day) DO UPDATE SET count = count + 1").run(req.user.id, day);
+    res.set({ "Content-Type": "audio/mpeg", "Cache-Control": "private, max-age=86400" }).send(Buffer.from(mp3));
+  });
+
+  // Tiger Data: anonymous terms change events. Signed in extensions report; anyone can read the tracker.
+  app.post("/api/changes", requireExt, async (req, res) => {
+    if (!changes) return res.status(503).json({ error: "The change tracker is not available right now." });
+    if (!changeLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many reports." });
+    const { url, hashAfter, riskBefore, riskAfter, added, removed } = req.body || {};
+    let u;
+    try { u = new URL(String(url)); } catch { return res.status(400).json({ error: "Bad URL." }); }
+    if (!/^https?:$/.test(u.protocol) || !hashAfter) return res.status(400).json({ error: "Bad change report." });
+    const changes90d = await changes.record({ url: u.toString(), hashAfter, riskBefore, riskAfter, added: Number(added), removed: Number(removed) });
+    res.json({ changes90d });
+  });
+
+  app.get("/api/changes", async (req, res) => {
+    if (!changes) return res.status(503).json({ error: "The change tracker is not available right now." });
+    res.set("Cache-Control", "public, max-age=60").json(await changes.recent());
+  });
+
+  app.get("/api/changes/count", async (req, res) => {
+    if (!changes) return res.status(503).json({ error: "The change tracker is not available right now." });
+    let u;
+    try { u = new URL(String(req.query.url)); } catch { return res.status(400).json({ error: "Bad URL." }); }
+    res.json({ changes90d: await changes.countForUrl(u.toString()) });
+  });
+
   app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
+
+  // Auth0: "Continue with Google". Same account as email sign up when the email is verified and matches.
+  const nextPath = (n) => (/^\/(?!\/)[\w\-/?=&.]*$/.test(String(n || "")) ? String(n) : "/account");
+  app.get("/auth/google", (req, res) => {
+    if (!auth0) return res.redirect("/login?error=google");
+    const { url, state, verifier } = auth0.start();
+    const next = req.query.ext === "1" ? "/account?connect=1" : nextPath(req.query.next);
+    db.prepare("DELETE FROM oauth_states WHERE created_at < ?").run(Date.now() - 10 * 60 * 1000);
+    db.prepare("INSERT INTO oauth_states (state, verifier, next, created_at) VALUES (?, ?, ?, ?)").run(state, verifier, next, Date.now());
+    res.redirect(url);
+  });
+
+  app.get("/auth/callback", async (req, res) => {
+    const fail = () => res.redirect("/login?error=google");
+    if (!auth0 || req.query.error || !req.query.code || !req.query.state) return fail();
+    const row = db.prepare("SELECT * FROM oauth_states WHERE state = ?").get(String(req.query.state));
+    db.prepare("DELETE FROM oauth_states WHERE state = ?").run(String(req.query.state));
+    if (!row || row.created_at < Date.now() - 10 * 60 * 1000) return fail();
+    let profile;
+    try { profile = await auth0.finish(String(req.query.code), row.verifier); } catch (e) { console.error("auth0", e.message); return fail(); }
+    if (!profile.emailVerified || !EMAIL.test(profile.email)) return res.redirect("/login?error=unverified");
+    let user = db.prepare("SELECT * FROM users WHERE auth0_sub = ?").get(profile.sub)
+      || db.prepare("SELECT * FROM users WHERE email = ?").get(profile.email);
+    if (user && !user.auth0_sub) {
+      // We never verified the email on password sign up, so whoever set that password may not own the address.
+      // Google just proved who does: retire the old password and sign out its sessions before linking.
+      db.prepare("UPDATE users SET auth0_sub = ?, password_hash = '!oauth' WHERE id = ?").run(profile.sub, user.id);
+      db.prepare("DELETE FROM sessions WHERE user_id = ?").run(user.id);
+    }
+    if (!user) {
+      // No password: these accounts sign in through Google only ("!" never verifies as a scrypt hash).
+      const { lastInsertRowid } = db.prepare("INSERT INTO users (email, name, password_hash, created_at, auth0_sub) VALUES (?, ?, '!oauth', ?, ?)")
+        .run(profile.email, (profile.name || profile.email.split("@")[0]).slice(0, 100), Date.now(), profile.sub);
+      user = { id: Number(lastInsertRowid) };
+    }
+    setSessionCookie(res, createSession(db, user.id, "web"));
+    res.redirect(row.next);
+  });
 
   // Pages: /login serves login.html, and so on.
   app.use(express.static(PUBLIC_DIR, { extensions: ["html"], index: "index.html" }));

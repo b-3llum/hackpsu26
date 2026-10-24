@@ -56,3 +56,26 @@ export function safeNext(defaultPath = "/account") {
   const next = new URLSearchParams(location.search).get("next") || "";
   return /^\/(?!\/)[\w\-/?=&.]*$/.test(next) ? next : defaultPath;
 }
+
+// "Continue with Google" (Auth0) shows only when the server has it configured. Keeps ?next= and ?ext=1.
+export async function setupGoogle({ showTerms = false } = {}) {
+  const block = document.getElementById("google-block");
+  if (!block) return;
+  const { data } = await api("/api/config").catch(() => ({ data: {} }));
+  if (!data.google) return;
+  const params = new URLSearchParams(location.search);
+  const q = new URLSearchParams();
+  if (params.get("ext") === "1") q.set("ext", "1");
+  if (params.get("next")) q.set("next", params.get("next"));
+  document.getElementById("google").href = `/auth/google${q.toString() ? `?${q}` : ""}`;
+  document.getElementById("google-terms").hidden = !showTerms;
+  block.hidden = false;
+}
+
+// Errors passed back in the URL (from the Google callback).
+export function urlError() {
+  const e = new URLSearchParams(location.search).get("error");
+  return e === "google" ? "Google sign in did not finish. Try again, or use your email and password."
+    : e === "unverified" ? "Your Google account email is not verified, so we could not sign you in with it."
+    : "";
+}

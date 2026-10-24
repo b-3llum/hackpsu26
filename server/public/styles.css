@@ -196,6 +196,10 @@ a { color: inherit; }
 .cta .row { justify-content: center; }
 .cta .lede { color: var(--muted); font-size: 18px; margin: 0 auto 28px; max-width: 560px; }
 .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
+.btn-google { gap: 10px; }
+.btn-google svg { width: 18px; height: 18px; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--faint); font-size: 14px; margin: 20px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
 /* Terms change tracker (/changes) */
 .changes-list { list-style: none; margin: 12px 0 0; padding: 0; }
