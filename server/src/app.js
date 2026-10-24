@@ -235,6 +235,10 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     let u;
     try { u = new URL(String(url)); } catch { return res.status(400).json({ error: "Bad URL." }); }
     if (!/^https?:$/.test(u.protocol) || !hashAfter) return res.status(400).json({ error: "Bad change report." });
+    // Only public sites go on the public tracker: no localhost, IP addresses, or single label hosts (demo pages, intranets).
+    if (!u.hostname.includes(".") || /^[\d.]+$|^\[|:/.test(u.hostname) || /(^|\.)(localhost|local|internal|lan)$/.test(u.hostname)) {
+      return res.json({ changes90d: null, skipped: "not a public site" });
+    }
     const changes90d = await changes.record({ url: u.toString(), hashAfter, riskBefore, riskAfter, added: Number(added), removed: Number(removed) });
     res.json({ changes90d });
   });

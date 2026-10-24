@@ -77,6 +77,10 @@ test("change tracker: signed in reports, public reads, bad input refused", async
   assert.equal(recorded[0].url, "https://a.com/terms?x=1");
   assert.ok(!("userId" in recorded[0]) && !("email" in recorded[0]), "no user identity is sent to the tracker");
   assert.equal((await s.call("/api/changes", { body: { ...report, url: "javascript:alert(1)" }, auth: token })).status, 400);
+  for (const url of ["http://127.0.0.1:8765/terms-v2.html", "http://localhost/terms", "http://intranet/terms", "http://[::1]/t", "http://printer.local/t"]) {
+    assert.deepEqual(await (await s.call("/api/changes", { body: { ...report, url }, auth: token })).json(), { changes90d: null, skipped: "not a public site" }, url);
+  }
+  assert.equal(recorded.length, 1, "local hosts are never recorded");
   assert.equal((await (await s.call("/api/changes", { method: "GET" })).json()).events[0].host, "a.com");
   assert.equal((await (await s.call(`/api/changes/count?url=${encodeURIComponent("https://a.com/terms")}`, { method: "GET" })).json()).changes90d, 2);
 });
