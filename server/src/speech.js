@@ -4,13 +4,15 @@ export const DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
 export const DEFAULT_TTS_MODEL = "eleven_flash_v2_5";
 const MAX_SCRIPT = 1200;
 // Bump when the narration prompt changes, so cached audio is regenerated.
-export const NARRATION_VERSION = "n2";
+export const NARRATION_VERSION = "n3";
 
 /** @returns {((text: string) => Promise<Buffer>) | null} null when no key is set */
-export function elevenSpeech({ apiKey, voiceId = DEFAULT_VOICE, model = DEFAULT_TTS_MODEL, fetchImpl = fetch, timeoutMs = 20000 }) {
+// Speech only needs a voice quality MP3: 32 kbps is about a quarter of the default size, so it starts playing sooner.
+export const DEFAULT_FORMAT = "mp3_22050_32";
+export function elevenSpeech({ apiKey, voiceId = DEFAULT_VOICE, model = DEFAULT_TTS_MODEL, format = DEFAULT_FORMAT, fetchImpl = fetch, timeoutMs = 20000 }) {
   if (!apiKey) return null;
   return async (text) => {
-    const res = await fetchImpl(`${ELEVEN_BASE}/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`, {
+    const res = await fetchImpl(`${ELEVEN_BASE}/text-to-speech/${encodeURIComponent(voiceId)}?output_format=${encodeURIComponent(format)}`, {
       method: "POST",
       headers: { "xi-api-key": apiKey, "Content-Type": "application/json", Accept: "audio/mpeg" },
       body: JSON.stringify({ text, model_id: model }),
