@@ -33,7 +33,7 @@ Everything core runs in your browser with no account. A free account turns on AI
 - **Tiger Data** (TimescaleDB hypertable with `time_bucket`) stores anonymous change events: policy address without query string, text hash, risk, and time, with no user id.
 - **Auth0** provides Continue with Google (code flow with state and PKCE, verified emails only), alongside email and password accounts hashed with scrypt.
 - **Stripe** Checkout, billing portal, and signed webhooks are built and were tested end to end in test mode; billing is switched off while Pro is free.
-- **Quality:** 81 automated tests, plus end to end runs in Chrome for Testing with the extension loaded: the offline demo, real cookie banners, the live site, the install flow, and checkout.
+- **Quality:** 82 automated tests, plus end to end runs in Chrome for Testing with the extension loaded: the offline demo, real cookie banners, the live site, the install flow, and checkout.
 
 ## Challenges we ran into
 

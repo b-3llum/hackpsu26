@@ -213,7 +213,7 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     if (!speech) return res.status(503).json({ error: "Listening is not available right now." });
     const input = listenInput(req.body);
     // Same receipt, same audio: the cache key covers everything the narration is written from.
-    const key = sha256(`${NARRATION_VERSION}\n${JSON.stringify(input)}`);
+    const key = sha256(`${NARRATION_VERSION}\n${speech.voice || ""}\n${JSON.stringify(input)}`);
     const pro = planOf(req.user) === "pro";
     if (!listenLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many listens this hour." });
     const day = new Date().toISOString().slice(0, 10);

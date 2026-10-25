@@ -35,6 +35,20 @@ test("listScript: risk, unique points, capped length", () => {
   assert.ok(long.length <= 1240 && long.endsWith("And more points in the receipt."));
 });
 
+test("speak: changing the voice does not replay audio cached in the old voice", async (t) => {
+  let calls = 0;
+  const speech = async () => { calls++; return Buffer.from("ID3audio"); };
+  speech.voice = "old-voice";
+  const s = await setup({ speech }); t.after(s.close);
+  const { token } = await s.signup();
+  s.db.prepare("UPDATE users SET plan = 'pro'").run();
+  for (let i = 0; i < 2; i++) assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY }, auth: token })).status, 200);
+  assert.equal(calls, 1);
+  speech.voice = "new-voice";
+  assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY }, auth: token })).status, 200);
+  assert.equal(calls, 2);
+});
+
 test("speak: off without a key, 3 free listens a day, cached audio, unlimited Pro", async (t) => {
   let calls = 0;
   const speech = async () => { calls++; return Buffer.from("ID3fake-mp3"); };

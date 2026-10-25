@@ -1,6 +1,6 @@
 // ElevenLabs text to speech for "Listen to this receipt". The key stays on the server.
 export const ELEVEN_BASE = "https://api.elevenlabs.io/v1";
-export const DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
+export const DEFAULT_VOICE = "Qggl4b0xRMiqOwhPtVWT";
 export const DEFAULT_TTS_MODEL = "eleven_flash_v2_5";
 const MAX_SCRIPT = 1200;
 // Bump when the narration prompt changes, so cached audio is regenerated.
@@ -11,7 +11,7 @@ export const NARRATION_VERSION = "n3";
 export const DEFAULT_FORMAT = "mp3_22050_32";
 export function elevenSpeech({ apiKey, voiceId = DEFAULT_VOICE, model = DEFAULT_TTS_MODEL, format = DEFAULT_FORMAT, fetchImpl = fetch, timeoutMs = 20000 }) {
   if (!apiKey) return null;
-  return async (text) => {
+  const speak = async (text) => {
     const res = await fetchImpl(`${ELEVEN_BASE}/text-to-speech/${encodeURIComponent(voiceId)}?output_format=${encodeURIComponent(format)}`, {
       method: "POST",
       headers: { "xi-api-key": apiKey, "Content-Type": "application/json", Accept: "audio/mpeg" },
@@ -21,6 +21,9 @@ export function elevenSpeech({ apiKey, voiceId = DEFAULT_VOICE, model = DEFAULT_
     if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 200)}`);
     return Buffer.from(await res.arrayBuffer());
   };
+  // Part of the audio cache key, so changing the voice regenerates cached audio.
+  speak.voice = voiceId;
+  return speak;
 }
 
 const RISK_WORDS = { low: "low", medium: "medium", high: "high" };
