@@ -82,7 +82,7 @@ Requirements: Node.js 24 or later, Chrome or another Chromium browser.
 
 ```
 cd extension && npm test               # 58 tests, no dependencies
-cd server && npm install && npm test   # 23 tests
+cd server && npm install && npm test   # 24 tests
 ```
 
 Run the server locally (every integration is optional; without its key a feature is simply off):
