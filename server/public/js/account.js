@@ -2,7 +2,8 @@ import { api, setBusy } from "./common.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
-let config = { extensionId: "", billing: false };
+let config = { extensionIds: [], billing: false };
+let extensionId = null; // whichever installed build answered (developer or Chrome Web Store)
 
 function notice(kind, text) {
   $("notice").className = `alert alert-${kind}`;
@@ -50,16 +51,27 @@ async function waitForPro() {
 }
 
 function extensionAvailable() {
-  return Boolean(config.extensionId && window.chrome?.runtime?.sendMessage);
+  return Boolean(extensionId && window.chrome?.runtime?.sendMessage);
 }
 
-function sendToExtension(message) {
+function ask(id, message) {
   return new Promise((resolve) => {
     try {
-      chrome.runtime.sendMessage(config.extensionId, message, (reply) => resolve(chrome.runtime.lastError ? null : reply));
+      chrome.runtime.sendMessage(id, message, (reply) => resolve(chrome.runtime.lastError ? null : reply));
     } catch { resolve(null); }
   });
 }
+
+// Find the installed build: the first ID that answers a status message.
+async function findExtension() {
+  if (!window.chrome?.runtime?.sendMessage) return null;
+  for (const id of config.extensionIds || []) {
+    if (await ask(id, { type: "status" })) return id;
+  }
+  return null;
+}
+
+const sendToExtension = (message) => ask(extensionId, message);
 
 async function refreshExtensionBadge(user) {
   if (!extensionAvailable()) return;
@@ -87,6 +99,7 @@ async function connect(user) {
 
 const user = await load();
 if (user) {
+  extensionId = await findExtension();
   await refreshExtensionBadge(user);
   if (params.get("checkout") === "success") waitForPro();
   if (params.get("checkout") === "cancel") notice("info", "Checkout cancelled. You are still on Free.");
