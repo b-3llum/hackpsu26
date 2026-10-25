@@ -50,12 +50,16 @@ export async function signOut({ fetchImpl } = {}) {
   await clearAccount();
 }
 
-/** ElevenLabs audio for a receipt summary, through our server. Returns { audio: Blob } or { error, status }. */
-export async function speakSummary(summary, { fetchImpl } = {}) {
+/**
+ * A spoken summary of a receipt, through our server: Gemini writes it from the points and their policy
+ * sentences, ElevenLabs reads it. Returns { audio: Blob } or { error, status }.
+ */
+export async function speakSummary(summary, { site = "", actions = [], fetchImpl } = {}) {
   const account = await getAccount();
   if (!account?.token) return { error: "Sign in to listen to receipts.", status: 401 };
-  const claims = (summary?.claims || []).map((c) => ({ text: c.text }));
-  const res = await call("/api/speak", { token: account.token, body: { summary: { risk: summary?.risk, claims } }, fetchImpl });
+  const claims = (summary?.claims || []).map((c) => ({ text: c.text, sourceSentence: c.sourceSentence }));
+  const body = { site, summary: { risk: summary?.risk, claims }, actions };
+  const res = await call("/api/speak", { token: account.token, body, fetchImpl });
   if (res.status === 401) { await clearAccount(); return { error: "Sign in again to listen.", status: 401 }; }
   if (!res.ok) {
     let msg = "Listening is not available right now.";

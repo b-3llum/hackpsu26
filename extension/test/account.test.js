@@ -56,10 +56,10 @@ test("speakSummary: needs sign in, sends only risk and point texts, surfaces lim
   assert.equal((await speakSummary({ risk: "high", claims: [] })).status, 401);
   await setAccount({ token: "t3", email: "a@b.c", plan: "free" });
   const blobReply = async (url, init) => { reply.last = { url, init }; return { status: 200, ok: true, blob: async () => new Blob(["mp3"]) }; };
-  const ok = await speakSummary({ risk: "high", domain: "secret.example", claims: [{ text: "They can sell your data", sourceSentence: "We sell data." }] }, { fetchImpl: blobReply });
+  const ok = await speakSummary({ risk: "high", claims: [{ text: "They can sell your data", sourceSentence: "We sell data.", sourceIndex: 3 }] }, { site: "snappix.com", actions: ["Opt out of the sale"], fetchImpl: blobReply });
   assert.ok(ok.audio);
   const body = JSON.parse(reply.last.init.body);
-  assert.deepEqual(body, { summary: { risk: "high", claims: [{ text: "They can sell your data" }] } });
+  assert.deepEqual(body, { site: "snappix.com", summary: { risk: "high", claims: [{ text: "They can sell your data", sourceSentence: "We sell data." }] }, actions: ["Opt out of the sale"] });
   const limited = await speakSummary({ risk: "low", claims: [] }, { fetchImpl: reply(402, { error: "Free accounts get 3 listens a day." }) });
   assert.deepEqual(limited, { error: "Free accounts get 3 listens a day.", status: 402 });
   assert.equal(await reportChange({ url: "https://a.com/t?session=secret#frag", hashAfter: "h" }, { fetchImpl: reply(200, { changes90d: 4 }) }), 4);

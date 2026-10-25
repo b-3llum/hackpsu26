@@ -59,7 +59,7 @@ Full demo and pitch flow: [`docs/DEMO.md`](docs/DEMO.md), [`docs/PITCH.md`](docs
 
 ```
 cd extension && npm test     # 63 tests: rules, finance, summaries, actions, account, Gemini adapter, SnapPix demo flow
-cd server && npm test        # 15 tests: auth, CSRF, rate limits, Stripe webhook, Pro gate, cache, Listen, tracker, Auth0
+cd server && npm test        # 18 tests: auth, CSRF, rate limits, Stripe webhook, Pro gate, cache, Listen narration, tracker, Auth0
 ```
 
 The extension tests need no installs; the server needs `npm install` once.

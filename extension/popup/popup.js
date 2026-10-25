@@ -45,8 +45,9 @@ async function listen(button, receipt) {
   const status = button.closest(".receipt").querySelector(".listen-status");
   if (playing) { playing.audio.pause(); const was = playing.button; playing.button.textContent = "\u25B6 Listen"; playing = null; if (was === button) return; }
   button.disabled = true;
-  status.textContent = "Getting audio...";
-  const { audio, error, status: code } = await speakSummary(receipt.summary);
+  status.textContent = "Writing your spoken summary...";
+  const actions = suggestActions(receipt).map((a) => a.title);
+  const { audio, error, status: code } = await speakSummary(receipt.summary, { site: receipt.domain, actions });
   button.disabled = false;
   if (error) {
     status.innerHTML = code === 401 ? `${esc(error)} <a href="${SITE}/login?ext=1" target="_blank" rel="noopener">Sign in</a>`
@@ -56,7 +57,7 @@ async function listen(button, receipt) {
   const el = new Audio(URL.createObjectURL(audio));
   playing = { audio: el, button };
   button.textContent = "\u25A0 Stop";
-  status.textContent = "Reading this receipt aloud (voice by ElevenLabs).";
+  status.textContent = "Reading a summary of this receipt aloud (written by Gemini, voice by ElevenLabs).";
   el.onended = () => { button.textContent = "\u25B6 Listen"; status.textContent = ""; playing = null; };
   el.play();
 }
