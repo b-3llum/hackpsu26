@@ -304,7 +304,14 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
   });
 
   // Pages: /login serves login.html, and so on.
-  app.use(express.static(PUBLIC_DIR, { extensions: ["html"], index: "index.html" }));
+  app.use(express.static(PUBLIC_DIR, {
+    extensions: ["html"],
+    index: "index.html",
+    // The extension download (built on deploy into public/download/) saves as a file instead of opening.
+    setHeaders: (res, path) => {
+      if (path.endsWith(".zip")) res.set({ "Content-Disposition": 'attachment; filename="consent-receipts.zip"', "Cache-Control": "no-cache" });
+    },
+  }));
   app.use((req, res) => res.status(404).sendFile("404.html", { root: PUBLIC_DIR }, () => res.end()));
 
   app.use((err, req, res, next) => {

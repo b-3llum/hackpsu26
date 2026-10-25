@@ -1,4 +1,4 @@
-import { api, setBusy } from "./common.js";
+import { api, setBusy, askExtension, findExtension } from "./common.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -55,24 +55,7 @@ function extensionAvailable() {
   return Boolean(extensionId && window.chrome?.runtime?.sendMessage);
 }
 
-function ask(id, message) {
-  return new Promise((resolve) => {
-    try {
-      chrome.runtime.sendMessage(id, message, (reply) => resolve(chrome.runtime.lastError ? null : reply));
-    } catch { resolve(null); }
-  });
-}
-
-// Find the installed build: the first ID that answers a status message.
-async function findExtension() {
-  if (!window.chrome?.runtime?.sendMessage) return null;
-  for (const id of config.extensionIds || []) {
-    if (await ask(id, { type: "status" })) return id;
-  }
-  return null;
-}
-
-const sendToExtension = (message) => ask(extensionId, message);
+const sendToExtension = (message) => askExtension(extensionId, message);
 
 async function refreshExtensionBadge(user) {
   if (!extensionAvailable()) return;
@@ -100,11 +83,17 @@ async function connect(user) {
 
 const user = await load();
 if (user) {
-  extensionId = await findExtension();
+  extensionId = await findExtension(config.extensionIds);
+  // Not installed: lead with the download instead of a Connect button that cannot work yet.
+  if (!extensionId) {
+    $("no-ext").hidden = false;
+    $("connect").hidden = true;
+    if (params.get("connect") === "1") notice("info", "Install the extension first, then come back here to connect it.");
+  }
   await refreshExtensionBadge(user);
   if (params.get("checkout") === "success") waitForPro();
   if (params.get("checkout") === "cancel") notice("info", "Checkout cancelled. You are still on Free.");
-  if (params.get("connect") === "1") connect(user);
+  if (params.get("connect") === "1" && extensionId) connect(user);
 
   $("connect").addEventListener("click", () => connect(user));
   $("upgrade").addEventListener("click", async () => {

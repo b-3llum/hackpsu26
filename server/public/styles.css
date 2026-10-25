@@ -206,3 +206,5 @@ a { color: inherit; }
 .changes-item { padding: 12px 0; border-top: 1px solid var(--line); gap: 12px; }
 .changes-item:first-child { border-top: 0; }
 .changes-item .hint { margin: 4px 0 0; }
+.code-pill { font: 500 15px ui-monospace, Menlo, Consolas, monospace; background: var(--shell); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px 12px; user-select: all; }
+.no-ext-title { margin: 0; font-weight: 500; color: var(--ink); }

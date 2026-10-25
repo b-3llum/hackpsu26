@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install the extension · Consent Receipts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/"><img class="brand-logo" src="/logo.png" width="32" height="32" alt="">Consent Receipts</a>
+      <a class="back-link" href="/"><span aria-hidden="true">&larr;</span> Back to home</a>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <div class="page-head">
+      <p class="eyebrow">Chrome, Edge, Brave, and other Chromium browsers</p>
+      <h1>Install Consent Receipts</h1>
+      <p>About a minute. The Chrome Web Store listing is on its way; until then, install it from the file below.</p>
+    </div>
+
+    <div class="stack">
+      <div class="alert alert-ok" role="status" id="installed" hidden>
+        Consent Receipts is installed in this browser. <a href="/account?connect=1" id="installed-connect">Connect it to your account</a> to turn on AI summaries and Listen.
+      </div>
+      <div class="alert alert-info" id="not-chromium" hidden>
+        This browser can't load Chrome extensions. Open this page in Chrome, Edge, or Brave.
+      </div>
+
+      <section class="card panel" aria-labelledby="dl-h">
+        <h2 id="dl-h">1. Download</h2>
+        <p class="sub">A small zip file with the extension. Nothing runs until you load it in step 4.</p>
+        <div class="row">
+          <a class="btn btn-primary btn-lg" id="download" href="/download/consent-receipts.zip" download="consent-receipts.zip">Download the extension (.zip)</a>
+          <span class="hint" id="dl-meta"></span>
+        </div>
+      </section>
+
+      <section class="card panel" aria-labelledby="unzip-h">
+        <h2 id="unzip-h">2. Unzip it</h2>
+        <p class="sub">Double click the downloaded file. You get a folder named <strong>consent-receipts</strong>. Move it somewhere it will stay, like your Documents folder: Chrome loads the extension from that folder.</p>
+      </section>
+
+      <section class="card panel" aria-labelledby="ext-h">
+        <h2 id="ext-h">3. Open the extensions page and turn on Developer mode</h2>
+        <p class="sub">Websites can't open this page for you. Copy the address, paste it into a new tab, then switch on <strong>Developer mode</strong> in the top right corner.</p>
+        <div class="row">
+          <code class="code-pill" id="ext-url">chrome://extensions</code>
+          <button class="btn btn-secondary btn-sm" type="button" id="copy">Copy address</button>
+          <span class="hint" id="copy-status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section class="card panel" aria-labelledby="load-h">
+        <h2 id="load-h">4. Load it</h2>
+        <p class="sub">Click <strong>Load unpacked</strong> and choose the <strong>consent-receipts</strong> folder. Then click the puzzle piece icon in the toolbar and pin Consent Receipts.</p>
+        <div class="row">
+          <button class="btn btn-primary" type="button" id="done">I installed it</button>
+          <span class="hint" id="done-status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section class="card panel" aria-labelledby="next-h">
+        <h2 id="next-h">That's it</h2>
+        <p class="sub">The next time you click Agree or Accept on a site, a receipt appears in the extension. Create a free account and connect the extension to turn on AI summaries and Listen.</p>
+        <p class="hint">Updating: when a new version is out, download it again, replace the folder, and click the reload icon on Consent Receipts in the extensions page.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Legal">
+        <a href="/legal/terms">Terms of Service</a>
+        <a href="/legal/privacy">Privacy Policy</a>
+      </nav>
+      <div>&copy; 2026 Consent Receipts. Built at HackPSU Fall 26.</div>
+    </div>
+  </footer>
+  <script type="module" src="/js/install.js"></script>
+</body>
+</html>

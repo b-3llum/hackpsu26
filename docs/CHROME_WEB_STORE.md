@@ -84,7 +84,7 @@ Keep a record of the terms and privacy policies you agree to on websites, explai
 | Personally identifiable information | Yes | Name and email for the optional account (entered on our website; the extension stores the email to show who is signed in). |
 | Authentication information | Yes | A sign in token from our website, stored by the extension to call Pro features. |
 | Website content | Yes | Pro only: the public text of a policy you agreed to, sent to our server to create the AI summary. Listen: the summary text. |
-| Web history | Yes | Signed in users only: when a saved policy changes, its address (without query string), a hash of its text, and the risk level go to our anonymous change tracker. Stored without any user id. |
+| Web history | Yes | Signed in users only: when a saved policy changes, its address (query string and fragment removed in the extension before sending), a hash of its text, and the risk level go to our anonymous change tracker. Stored without any user id. |
 | Health, financial and payment, personal communications, location, user activity | No | Payments happen on Stripe's site, not in the extension. |
 
 **Certifications** (all true; check all three):

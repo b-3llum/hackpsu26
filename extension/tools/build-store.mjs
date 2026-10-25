@@ -1,6 +1,9 @@
 // Build the Chrome Web Store package: dist/consent-receipts-<version>.zip
 // Usage: node extension/tools/build-store.mjs
-// - drops the manifest "key" (the store assigns its own extension ID)
+//        node extension/tools/build-store.mjs --download <out.zip>   (website download, see below)
+// - drops the manifest "key" (the store assigns its own extension ID); --download keeps it, so the unpacked
+//   install has the fixed ID the website connects to, and wraps the files in a consent-receipts/ folder
+//   so unzipping gives one folder to pick in "Load unpacked"
 // - leaves out tests, the offline demo, docs, package files, and server only code
 // - checks that every import from the entry points resolves inside the package
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -10,11 +13,15 @@ import { execFileSync } from "node:child_process";
 
 const EXT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = resolve(EXT, "..");
-const OUT = join(ROOT, "dist", "store");
+const downloadAt = process.argv.indexOf("--download");
+const download = downloadAt > -1 ? resolve(process.argv[downloadAt + 1] || "") : null;
+if (downloadAt > -1 && !process.argv[downloadAt + 1]) throw new Error("--download needs an output .zip path");
+const STAGE = join(ROOT, "dist", download ? "download" : "store");
+const OUT = download ? join(STAGE, "consent-receipts") : STAGE;
 const INCLUDE = ["manifest.json", "background.js", "content.js", "icons", "popup", "options", "lib"];
 const EXCLUDE = [/\/test\//, /README\.md$/, /package\.json$/, /^lib\/gemini\.js$/, /\.DS_Store$/];
 
-rmSync(OUT, { recursive: true, force: true });
+rmSync(STAGE, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 for (const item of INCLUDE) {
   cpSync(join(EXT, item), join(OUT, item), {
@@ -27,7 +34,7 @@ for (const item of INCLUDE) {
 }
 
 const manifest = JSON.parse(readFileSync(join(EXT, "manifest.json"), "utf8"));
-delete manifest.key;
+if (!download) delete manifest.key;
 // Store limits: name 75 characters, description 132.
 if (manifest.name.length > 75) throw new Error(`manifest name is ${manifest.name.length} characters (max 75)`);
 if (manifest.description.length > 132) throw new Error(`manifest description is ${manifest.description.length} characters (max 132)`);
@@ -75,9 +82,11 @@ const contentScripts = new Set(manifest.content_scripts.flatMap((c) => c.js).map
 const unused = allJs.filter((p) => !seen.has(p) && !contentScripts.has(p));
 if (unused.length) console.warn("unused JS in package:", unused.map((p) => relative(OUT, p)));
 
-const zip = join(ROOT, "dist", `consent-receipts-${manifest.version}.zip`);
+const zip = download || join(ROOT, "dist", `consent-receipts-${manifest.version}.zip`);
+mkdirSync(dirname(zip), { recursive: true });
 rmSync(zip, { force: true });
-execFileSync("zip", ["-qrX", zip, "."], { cwd: OUT });
+execFileSync("zip", ["-qrX", zip, download ? "consent-receipts" : "."], { cwd: STAGE });
 const files = execFileSync("zipinfo", ["-1", zip], { encoding: "utf8" }).trim().split("\n").filter((f) => !f.endsWith("/"));
-console.log(`built ${relative(ROOT, zip)}: ${files.length} files, ${(statSync(zip).size / 1024).toFixed(1)} KB, version ${manifest.version}, no key`);
+console.log(`built ${relative(ROOT, zip)}: ${files.length} files, ${(statSync(zip).size / 1024).toFixed(1)} KB, version ${manifest.version}, ${download ? "with key (fixed ID)" : "no key"}`);
+if (download) writeFileSync(zip.replace(/\.zip$/, ".json"), `${JSON.stringify({ version: manifest.version, bytes: statSync(zip).size, builtAt: new Date().toISOString() })}\n`);
 console.log(files.map((f) => `  ${f}`).join("\n"));

@@ -69,7 +69,10 @@ export async function speakSummary(summary, { fetchImpl } = {}) {
 export async function reportChange(change, { fetchImpl } = {}) {
   const account = await getAccount();
   if (!account?.token) return null;
-  const res = await call("/api/changes", { token: account.token, body: change, fetchImpl });
+  // Only the policy address goes out: no query string or fragment (tokens, session ids). The server strips them too.
+  let url;
+  try { const u = new URL(change.url); url = `${u.origin}${u.pathname}`; } catch { return null; }
+  const res = await call("/api/changes", { token: account.token, body: { ...change, url }, fetchImpl });
   if (!res.ok) return null;
   return (await res.json()).changes90d ?? null;
 }
