@@ -62,7 +62,7 @@ async function listen(button, receipt) {
 }
 
 function trustLine(s) {
-  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy. <a href="#" class="pro-link">AI summaries with Pro</a></div>';
+  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy. <a href="#" class="pro-link">Turn on AI summaries (free)</a></div>';
   return `<div class="trust">AI summary, trust ${Math.round((s.trust ?? 0) * 100)}%: claims without a real source sentence were removed. Tap a point to see its source.</div>`;
 }
 

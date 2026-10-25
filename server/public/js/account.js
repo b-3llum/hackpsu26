@@ -16,10 +16,11 @@ const fmtDate = (ms) => new Date(ms).toLocaleDateString(undefined, { year: "nume
 function render(user) {
   $("who").textContent = `${user.name} · ${user.email}`;
   const pro = user.plan === "pro";
-  $("plan-badge").textContent = pro ? "Pro" : "Free";
+  $("plan-badge").textContent = config.freePro ? "Pro, free" : pro ? "Pro" : "Free";
   $("plan-badge").className = `badge ${pro ? "badge-pro" : "badge-free"}`;
-  $("plan-free").hidden = pro;
-  $("plan-pro").hidden = !pro;
+  $("plan-freepro").hidden = !config.freePro;
+  $("plan-free").hidden = pro || config.freePro;
+  $("plan-pro").hidden = !pro || config.freePro;
   $("upgrade").hidden = !config.billing;
   $("billing-off").hidden = config.billing;
   if (pro) {

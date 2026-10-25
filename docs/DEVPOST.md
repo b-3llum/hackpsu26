@@ -26,7 +26,7 @@ Consent Receipts is a Chrome extension that:
 - Chrome extension, Manifest V3, plain ES modules with no dependencies (content script for consent detection, module service worker for policy fetches and scheduled checks, popup UI).
 - Rule based detectors for risk categories and finance terms, with tests.
 - Gemini API (`gemini-3.5-flash-lite` via `generateContent`, JSON output) for cited summaries, run on our server for Pro accounts, falling back to rules when the call fails.
-- Website at https://whatyousignupfor.us: accounts, Stripe test mode billing ($3 per month Pro), and the Pro summary API, on a Vultr VM (Node, Express, SQLite, Caddy, Cloudflare).
+- Website at https://whatyousignupfor.us: free accounts that turn on Pro (Gemini summaries, Listen), the Pro summary API, and Stripe billing code kept for later but switched off, on a Vultr VM (Node, Express, SQLite, Caddy, Cloudflare).
 - ElevenLabs text to speech for Listen, called only from our server so the key never ships in the extension.
 - Tiger Data (Timescale) hypertable for anonymous policy change events behind `GET /api/changes`; accounts stay in SQLite.
 - Auth0 for Continue with Google (OAuth code flow with state and PKCE).
@@ -64,7 +64,7 @@ javascript, chrome-extension, manifest-v3, gemini-api, node.js, express, sqlite,
 - Express (https://expressjs.com) and the Stripe Node library (https://github.com/stripe/stripe-node) on the server
 - Node.js built in modules: node:sqlite, node:crypto (scrypt), node:test
 - Caddy (https://caddyserver.com) for HTTPS, on a Vultr VM; Cloudflare in front of the domain
-- Google Gemini API (gemini-3.5-flash-lite) for Pro summaries; Stripe Checkout and Billing Portal in test mode
+- Google Gemini API (gemini-3.5-flash-lite) for Pro summaries; Stripe Checkout and Billing Portal (built and tested in test mode, switched off while Pro is free)
 - ElevenLabs text to speech API (https://elevenlabs.io) for Listen
 - Tiger Data / Timescale (https://www.tigerdata.com) for the terms change tracker
 - Auth0 (https://auth0.com) for Continue with Google

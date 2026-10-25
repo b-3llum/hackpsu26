@@ -13,7 +13,7 @@ const PRO_STATUSES = new Set(["active", "trialing"]);
 /**
  * @param {object} o
  * @param {import("node:sqlite").DatabaseSync} o.db
- * @param {{ publicUrl: string, extensionId: string (one ID or a comma separated list), stripePriceId: string, stripeWebhookSecret: string, secureCookies?: boolean }} o.config
+ * @param {{ publicUrl: string, extensionId: string (one ID or a comma separated list), stripePriceId: string, stripeWebhookSecret: string, secureCookies?: boolean, freePro?: boolean }} o.config
  * @param {object|null} o.stripe Stripe client, or null when billing is not configured
  * @param {(() => ((prompt: string) => Promise<string>) | null)} o.llm returns the Gemini function for summaries
  * @param {((text: string) => Promise<Buffer>) | null} [o.speech] ElevenLabs text to speech, or null
@@ -92,10 +92,13 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     req.user = extUser(req);
     return req.user ? next() : res.status(401).json({ error: "Please sign in from the extension." });
   };
+  // FREE_PRO: every signed in account gets Pro features; billing stays off but the Stripe code is kept.
+  const freePro = Boolean(config.freePro);
+  const planOf = (u) => (freePro ? "pro" : u.plan);
   const publicUser = (u) => ({
     name: u.name,
     email: u.email,
-    plan: u.plan,
+    plan: planOf(u),
     status: u.subscription_status,
     currentPeriodEnd: u.current_period_end,
     cancelAtPeriodEnd: Boolean(u.cancel_at_period_end),
@@ -106,7 +109,8 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
   app.get("/api/config", (req, res) => res.json({
     extensionId: extensionIds[0] || "",
     extensionIds,
-    billing: Boolean(stripe),
+    billing: Boolean(stripe) && !freePro,
+    freePro,
     google: Boolean(auth0),
     listen: Boolean(speech),
     tracker: Boolean(changes),
@@ -152,6 +156,7 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
   app.get("/api/me", requireWeb, (req, res) => res.json({ user: publicUser(req.user) }));
 
   app.post("/api/billing/checkout", requireWeb, async (req, res) => {
+    if (freePro) return res.status(409).json({ error: "Pro is free right now. There is nothing to pay." });
     if (!stripe) return res.status(503).json({ error: "Billing is not configured yet." });
     if (req.user.plan === "pro") return res.status(409).json({ error: "You already have Pro." });
     const customer = await ensureCustomer(req.user);
@@ -187,7 +192,7 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
 
   // Pro summaries. Summaries are cached per policy text, so we never store who read which policy.
   app.post("/api/summarize", requireExt, async (req, res) => {
-    if (req.user.plan !== "pro") return res.status(402).json({ error: "AI summaries are part of Pro.", plan: req.user.plan });
+    if (planOf(req.user) !== "pro") return res.status(402).json({ error: "AI summaries are part of Pro.", plan: req.user.plan });
     const text = String(req.body?.text || "");
     const mode = req.body?.mode === "finance" ? "finance" : "general";
     if (!text.trim()) return res.status(400).json({ error: "No policy text." });
@@ -208,7 +213,7 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     if (!speech) return res.status(503).json({ error: "Listening is not available right now." });
     const script = receiptScript(req.body?.summary);
     const key = sha256(script);
-    const pro = req.user.plan === "pro";
+    const pro = planOf(req.user) === "pro";
     if (!listenLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many listens this hour." });
     const day = new Date().toISOString().slice(0, 10);
     if (!pro) {

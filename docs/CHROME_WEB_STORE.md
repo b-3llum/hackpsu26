@@ -50,8 +50,8 @@ Free and private by default
 Receipts and the rule based summaries stay in your browser. No account needed.
 
 Optional account (https://whatyousignupfor.us)
-- Pro adds AI summaries (Google Gemini) that must cite a policy sentence for every point, with a trust score. Rule based findings always stay, so the AI cannot hide a flagged clause.
-- Listen: hear a receipt read aloud (ElevenLabs). 3 a day free with an account, unlimited on Pro.
+- A free account turns on Pro: AI summaries (Google Gemini) that must cite a policy sentence for every point, with a trust score. Rule based findings always stay, so the AI cannot hide a flagged clause.
+- Listen: hear a receipt read aloud (ElevenLabs).
 - A public tracker of which policies changed this week, built from anonymous change reports.
 
 Not legal advice. Summaries can miss things; the cited sentence and the full policy are always one click away.
@@ -98,7 +98,7 @@ Keep a record of the terms and privacy policies you agree to on websites, explai
 
 - **Visibility:** Unlisted (only people with the link) is recommended until judging is over; switch to Public later. Both go through the same review.
 - **Regions:** All regions.
-- **Pricing:** Free (Pro is billed on our website, not through the store).
+- **Pricing:** Free (Pro is free with an account).
 
 ## 5. Test instructions (for the reviewer)
 
@@ -107,7 +107,7 @@ No account is needed for the main features.
 1. Visit any site with a cookie banner (for example https://www.crowdstrike.com) and click Accept, or close the banner.
 2. Open the extension popup: a receipt appears with a risk score. Click a point to see the policy sentence it came from.
 3. Settings > Demo tools > "Simulate stale snapshot" shows a change alert on the newest receipt.
-Optional Pro features: create an account at https://whatyousignupfor.us/signup, click "Connect the extension" on the account page, then "Upgrade to Pro". Checkout is in Stripe test mode: card 4242 4242 4242 4242, any future date, any CVC. No real charge is made.
+Optional Pro features (free): create an account at https://whatyousignupfor.us/signup and click "Connect the extension" on the account page. AI summaries and Listen turn on; no payment is involved.
 ```
 
 ## 6. After approval
