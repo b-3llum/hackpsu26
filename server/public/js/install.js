@@ -1,4 +1,4 @@
-import { api, findExtension, isChromium } from "./common.js";
+import { api, findExtension, isChromium, freshDownloadLinks } from "./common.js";
 
 const $ = (id) => document.getElementById(id);
 const { data: config = {} } = await api("/api/config").catch(() => ({ data: {} }));
@@ -6,11 +6,10 @@ const ids = config.extensionIds || [];
 
 if (!isChromium()) $("not-chromium").hidden = false;
 
-// Version and size of the download, written next to the zip on deploy.
-fetch("/download/consent-receipts.json", { cache: "no-cache" })
-  .then((r) => (r.ok ? r.json() : null))
-  .then((m) => { if (m) $("dl-meta").textContent = `Version ${m.version}, ${Math.round(m.bytes / 1024)} KB`; })
-  .catch(() => {});
+// Version and size of the download (written next to the zip on deploy), and a cache proof link.
+freshDownloadLinks($("download")).then((m) => {
+  if (m) $("dl-meta").textContent = `Version ${m.version}, ${Math.round(m.bytes / 1024)} KB`;
+});
 
 async function check() {
   const id = await findExtension(ids);

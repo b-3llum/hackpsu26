@@ -1,4 +1,4 @@
-import { api, setBusy, askExtension, findExtension } from "./common.js";
+import { api, setBusy, askExtension, findExtension, freshDownloadLinks } from "./common.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -86,6 +86,7 @@ if (user) {
   extensionId = await findExtension(config.extensionIds);
   // Not installed: lead with the download instead of a Connect button that cannot work yet.
   if (!extensionId) {
+    freshDownloadLinks($("no-ext-download"));
     $("no-ext").hidden = false;
     $("connect").hidden = true;
     if (params.get("connect") === "1") notice("info", "Install the extension first, then come back here to connect it.");

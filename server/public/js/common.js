@@ -101,3 +101,15 @@ export async function findExtension(ids = []) {
 
 /** Chrome, Edge, Brave, and other Chromium browsers can load the extension. */
 export const isChromium = () => Boolean(window.chrome) || /Chrome\//.test(navigator.userAgent);
+
+// The extension download URL with a version tag, so Cloudflare and browser caches never serve an old build.
+export async function freshDownloadLinks(...links) {
+  try {
+    const r = await fetch("/download/consent-receipts.json", { cache: "no-cache" });
+    if (!r.ok) return null;
+    const meta = await r.json();
+    const v = encodeURIComponent(meta.builtAt || meta.version);
+    for (const a of links) if (a) a.href = `/download/consent-receipts.zip?v=${v}`;
+    return meta;
+  } catch { return null; }
+}
