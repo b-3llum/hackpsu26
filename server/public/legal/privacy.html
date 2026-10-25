@@ -38,6 +38,7 @@
     <p>If you are signed in, when the extension notices that a policy changed, it reports a change event to our server: the policy address without query strings, a hash of the policy text, the risk level before and after, and the time. The report is sent with your sign in so we can block spam, but the stored event carries no user id, account, or IP address. Events are stored in Tiger Data (Timescale) and power the public <a href="/changes">What changed this week</a> page.</p>
     <h2>Hosting</h2>
     <p>The website runs behind Cloudflare, which processes requests to deliver it and sees IP addresses like any content delivery network. Our app does not keep request logs.</p>
+    <p>The home page has a demo video hosted on YouTube. Nothing loads from YouTube until you press play. When you do, YouTube (Google) receives the request like any embedded video, under its own privacy policy.</p>
     <h2>Service providers</h2>
     <p>We use these services only for the features above: Google Gemini (summaries), ElevenLabs (Listen), Tiger Data (anonymous change events), Auth0 (Continue with Google), Stripe (payments), and Cloudflare (hosting). Each feature is off unless we have set it up, and none of them receives your receipts.</p>
     <h2>Payments</h2>
