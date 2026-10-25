@@ -12,7 +12,8 @@ export async function hashPassword(password) {
 
 export async function verifyPassword(password, stored) {
   const [alg, n, r, p, salt, hash] = String(stored).split("$");
-  if (alg !== "scrypt") return false;
+  // Accounts without a password (Google sign in) still pay the scrypt cost, so timing does not reveal them.
+  if (alg !== "scrypt") { await verifyPassword(password, DUMMY_HASH); return false; }
   const expected = Buffer.from(hash, "base64");
   const actual = await scryptAsync(password, Buffer.from(salt, "base64"), expected.length, { N: Number(n), r: Number(r), p: Number(p) });
   return timingSafeEqual(actual, expected);

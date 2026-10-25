@@ -101,3 +101,7 @@ Two AI agents and their humans share this repo. Agent instructions (commands, co
 ## Credits
 
 Open source and services used are listed in [`docs/DEVPOST.md`](docs/DEVPOST.md) (required by the HackPSU rules).
+
+## License
+
+[MIT](LICENSE).

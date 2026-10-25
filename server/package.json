@@ -1,6 +1,7 @@
 {
   "name": "consent-receipts-server",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=24"
