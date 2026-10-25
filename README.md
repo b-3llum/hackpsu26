@@ -14,16 +14,16 @@
 
 ## What it does
 
-| | Free (in your browser) | Pro ($3/month, Stripe test mode) |
+| | No account (in your browser) | Pro (free account) |
 | --- | --- | --- |
 | Receipt for every Agree, Accept all, Allow, "I agree" box, and closed cookie notice | yes | yes |
 | Plain words summary, Low / Medium / High risk, every point linked to its source sentence | rule based | plus Gemini, with a trust score |
 | Finance mode: fees, rate changes, overdraft, late payment, minimum balance, auto renewal | yes | yes |
 | Change alerts with a diff, What to do next actions with drafted requests | yes | yes |
-| Listen to a receipt (ElevenLabs) | 3 a day (account needed) | unlimited |
+| Listen to a receipt (ElevenLabs) | needs an account | unlimited |
 | Public terms change tracker at `/changes` (Tiger Data) | reports when signed in | reports when signed in |
 
-Free never sends anything to our server. Pro sends only the public policy text; summaries are cached per policy; we don't keep a record of which sites anyone visits. See [`server/public/legal/privacy.html`](server/public/legal/privacy.html).
+Pro is free right now (server setting `FREE_PRO=1`; the Stripe billing code is kept but switched off). Without an account nothing is sent to our server. Pro sends only the public policy text; summaries are cached per policy; we don't keep a record of which sites anyone visits. See [`server/public/legal/privacy.html`](server/public/legal/privacy.html).
 
 ## Try it in 2 minutes
 
@@ -34,7 +34,7 @@ Free never sends anything to our server. Pro sends only the public policy text; 
    ```
    Open http://127.0.0.1:8765/index.html, click **Accept all**, and open the popup: a SnapPix receipt at **Medium**. Expand a point to see its source sentence.
 3. **See a terms change:** popup > **Settings** > **Demo tools** > **Simulate terms change (v1 to v2)**. You get a notification, the receipt goes to **High**, with the diff, finance flags, and **What to do next**.
-4. **Pro features:** sign up at https://whatyousignupfor.us (or **Settings > Sign in**), click **Connect the extension** on the account page, then **Upgrade to Pro** and pay with test card `4242 4242 4242 4242`, any future date, any CVC. Receipts switch to Gemini summaries a moment later, and **Listen** plays them aloud.
+4. **Pro features (free):** sign up at https://whatyousignupfor.us (or **Settings > Sign in**) and click **Connect the extension** on the account page. Receipts switch to Gemini summaries a moment later, and **Listen** plays them aloud. No payment.
 
 Full demo and pitch flow: [`docs/DEMO.md`](docs/DEMO.md), [`docs/PITCH.md`](docs/PITCH.md).
 
@@ -59,7 +59,7 @@ Full demo and pitch flow: [`docs/DEMO.md`](docs/DEMO.md), [`docs/PITCH.md`](docs
 
 ```
 cd extension && npm test     # 63 tests: rules, finance, summaries, actions, account, Gemini adapter, SnapPix demo flow
-cd server && npm test        # 13 tests: auth, CSRF, rate limits, Stripe webhook, Pro gate, cache, Listen, tracker, Auth0
+cd server && npm test        # 15 tests: auth, CSRF, rate limits, Stripe webhook, Pro gate, cache, Listen, tracker, Auth0
 ```
 
 The extension tests need no installs; the server needs `npm install` once.
@@ -81,11 +81,11 @@ Every integration is optional: without its key the feature is simply off (`GET /
 | Domain | `whatyousignupfor.us`, DNS on Cloudflare (proxied, SSL mode Full) |
 | Web | Caddy (Let's Encrypt) to the app on `127.0.0.1:3000`, systemd unit `consent`, sandboxed |
 | Data | SQLite at `/var/lib/consent/consent.db` (accounts, sessions, caches); Tiger Cloud for change events |
-| Secrets | `/etc/consent/env` on the VM (mode 640). Local copies live in each person's own `~/.apikeys`, never in the repo. |
+| Secrets | `/etc/consent/env` on the VM (mode 640; `FREE_PRO=1` makes Pro free). Local copies live in each person's own `~/.apikeys`, never in the repo. |
 | Deploy | `ssh root@64.177.46.127 'BRANCH=main bash /opt/consent/app/server/deploy/deploy.sh'` |
 | Logs | `journalctl -u consent -f` and `journalctl -u caddy` |
 
-Services: Google Gemini (`gemini-3.5-flash-lite`), Stripe (test mode, product "Consent Receipts Pro"), ElevenLabs (`eleven_flash_v2_5`, key restricted to the VM's IP), Tiger Data (TimescaleDB), Auth0 (Google connection; callback `https://whatyousignupfor.us/auth/callback`), Cloudflare.
+Services: Google Gemini (`gemini-3.5-flash-lite`), Stripe (test mode, product "Consent Receipts Pro", switched off while `FREE_PRO=1`), ElevenLabs (`eleven_flash_v2_5`, key restricted to the VM's IP), Tiger Data (TimescaleDB), Auth0 (Google connection; callback `https://whatyousignupfor.us/auth/callback`), Cloudflare.
 
 When deleting rows by hand with the `sqlite3` shell, run `PRAGMA foreign_keys=ON;` first, or orphan sessions can attach to the next new account.
 

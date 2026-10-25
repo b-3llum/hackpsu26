@@ -118,3 +118,23 @@ test("config reports which integrations are on", async (t) => {
   const cfg = await (await s.call("/api/config", { method: "GET" })).json();
   assert.deepEqual([cfg.listen, cfg.tracker, cfg.google], [true, false, false]);
 });
+
+test("FREE_PRO: every account gets Pro features and checkout is off", async (t) => {
+  const s = await setup({
+    config: { publicUrl: ORIGIN, extensionId: "x".repeat(32), secureCookies: false, freePro: true },
+    llm: () => async () => JSON.stringify({ claims: [{ text: "They can sell your data", category: "data_sold", sourceIndex: 0 }] }),
+    speech: async () => Buffer.from("ID3audio"),
+  });
+  t.after(s.close);
+  const { cookie, token } = await s.signup();
+  assert.equal((await (await s.call("/api/me", { method: "GET", cookie })).json()).user.plan, "pro");
+  const cfg = await (await s.call("/api/config", { method: "GET" })).json();
+  assert.equal(cfg.freePro, true);
+  assert.equal(cfg.billing, false);
+  const sum = await s.call("/api/summarize", { body: { text: "We may sell your personal data to advertisers." }, auth: token });
+  assert.equal(sum.status, 200);
+  assert.equal((await sum.json()).summary.engine, "ai");
+  for (let i = 0; i < 5; i++) assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY }, auth: token })).status, 200, "no daily listen cap");
+  assert.equal((await s.call("/api/billing/checkout", { body: {}, cookie })).status, 409);
+  assert.equal(s.db.prepare("SELECT plan FROM users").get().plan, "free", "stored plan is untouched, so paid Pro can come back");
+});

@@ -26,7 +26,7 @@
       <li>A scrypt hash of your password, if you sign up with email and password. We never store the password itself.</li>
       <li>If you choose Continue with Google, the verified email and name Google shares through Auth0, used to sign you in to the same account. We don't get your Google password.</li>
       <li>Your plan (Free or Pro), your subscription status, and your renewal date.</li>
-      <li>Your Stripe customer ID, if you start Pro checkout.</li>
+      <li>Your Stripe customer ID, only if you started a checkout while Pro was paid.</li>
       <li>If you connect the extension, a sign in token stored in the extension. Our server keeps only a hash of that token.</li>
       <li>A session cookie that keeps you signed in.</li>
     </ul>
@@ -41,7 +41,7 @@
     <h2>Service providers</h2>
     <p>We use these services only for the features above: Google Gemini (summaries), ElevenLabs (Listen), Tiger Data (anonymous change events), Auth0 (Continue with Google), Stripe (payments), and Cloudflare (hosting). Each feature is off unless we have set it up, and none of them receives your receipts.</p>
     <h2>Payments</h2>
-    <p>Stripe processes checkout and billing. We don't see or store your card number. During HackPSU Fall 26, checkout runs in Stripe test mode.</p>
+    <p>Pro is free right now, so we take no payments and ask for no card. If that changes, Stripe will process payments and we will never see or store your card number.</p>
     <h2>Cookies</h2>
     <p>The website uses one session cookie to keep you signed in. We don't use advertising or tracking cookies.</p>
     <h2>Deleting your data</h2>

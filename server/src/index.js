@@ -27,6 +27,7 @@ const app = createApp({
     stripePriceId: env.STRIPE_PRICE_ID,
     stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET,
     secureCookies: env.INSECURE_COOKIES !== "1",
+    freePro: env.FREE_PRO === "1",
   },
   stripe: billing ? new Stripe(env.STRIPE_SECRET_KEY) : null,
   llm: () => geminiLlm({ apiKey: env.GEMINI_API_KEY, model: env.GEMINI_MODEL || undefined }),
@@ -37,4 +38,4 @@ const app = createApp({
 const on = (k) => (env[k] ? "on" : "off");
 
 const port = Number(env.PORT || 3000);
-app.listen(port, "127.0.0.1", () => console.log(`consent-receipts server on 127.0.0.1:${port} (billing ${billing ? "on" : "off"}, listen ${on("ELEVENLABS_API_KEY")}, tracker ${on("TIGER_DATABASE_URL")}, google ${on("AUTH0_CLIENT_SECRET")})`));
+app.listen(port, "127.0.0.1", () => console.log(`consent-receipts server on 127.0.0.1:${port} (billing ${billing ? "on" : "off"}${env.FREE_PRO === "1" ? ", pro free for everyone" : ""}, listen ${on("ELEVENLABS_API_KEY")}, tracker ${on("TIGER_DATABASE_URL")}, google ${on("AUTH0_CLIENT_SECRET")})`));
