@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { openDb } from "../src/db.js";
 import { createApp } from "../src/app.js";
-import { receiptScript } from "../src/speech.js";
+import { receiptScript, listenInput, listScript, spokenNarration, narrationPrompt } from "../src/speech.js";
 
 const ORIGIN = "https://whatyousignupfor.us";
 
@@ -31,7 +31,7 @@ test("receiptScript: risk, unique points, no site name, capped length", () => {
   const s = receiptScript({ ...SUMMARY, domain: "secret.example" });
   assert.equal(s, "Here is your consent receipt. Overall risk: high. What you agreed to: They can sell your data. You give up the right to sue in court.");
   assert.ok(!s.includes("secret.example"));
-  const long = receiptScript({ risk: "low", claims: Array.from({ length: 200 }, (_, i) => ({ text: `Point number ${i} about something` })) });
+  const long = receiptScript({ risk: "low", claims: Array.from({ length: 200 }, (_, i) => ({ text: `Point number ${i} about something that the policy says in a fairly long sentence` })) });
   assert.ok(long.length <= 1240 && long.endsWith("And more points in the receipt."));
 });
 
@@ -137,4 +137,59 @@ test("FREE_PRO: every account gets Pro features and checkout is off", async (t) 
   for (let i = 0; i < 5; i++) assert.equal((await s.call("/api/speak", { body: { summary: SUMMARY }, auth: token })).status, 200, "no daily listen cap");
   assert.equal((await s.call("/api/billing/checkout", { body: {}, cookie })).status, 409);
   assert.equal(s.db.prepare("SELECT plan FROM users").get().plan, "free", "stored plan is untouched, so paid Pro can come back");
+});
+
+test("listenInput: site, unique capped points with sources, actions; junk dropped", () => {
+  const input = listenInput({
+    site: "WWW.SnapPix.com",
+    summary: { risk: "HIGH", claims: [
+      { text: "They can sell your data", sourceSentence: "We may sell your personal data to advertising partners." },
+      { text: "they can sell your data", sourceSentence: "duplicate" },
+      { text: "" },
+    ] },
+    actions: ["Opt out of the sale or sharing of your data", 42],
+  });
+  assert.deepEqual(input, {
+    site: "snappix.com",
+    risk: "high",
+    points: [{ text: "They can sell your data", source: "We may sell your personal data to advertising partners." }],
+    actions: ["Opt out of the sale or sharing of your data", "42"],
+  });
+  assert.equal(listenInput({ site: "<script>", summary: {} }).site, "");
+  assert.match(listScript(input), /^Here is your consent receipt for snappix\.com\. Overall risk: high\./);
+});
+
+test("spoken narration: Gemini writes it from the cited sentences, cleaned; falls back on failure", async () => {
+  const input = listenInput({ site: "snappix.com", summary: { risk: "high", claims: [{ text: "They can sell your data", sourceSentence: "We may sell your personal data to advertising partners." }] }, actions: ["Opt out of the sale"] });
+  let prompt;
+  const llm = async (p) => { prompt = p; return JSON.stringify({ narration: "You agreed to **SnapPix**'s terms \u2014 and the risk is high. They can sell your personal data to advertising partners. Your best next step is to opt out of the sale." }); };
+  const text = await spokenNarration(llm, input);
+  assert.equal(text, "You agreed to SnapPix's terms, and the risk is high. They can sell your personal data to advertising partners. Your best next step is to opt out of the sale.");
+  assert.match(prompt, /Site: snappix\.com/);
+  assert.match(prompt, /Policy says: "We may sell your personal data to advertising partners\."/);
+  assert.match(prompt, /Begin exactly like this: "You agreed to <site name>'s terms\. The overall risk is high\."/);
+  assert.match(prompt, /starts "Your best next step:" and says this in plain words: Opt out of the sale\./);
+  assert.equal(await spokenNarration(async () => { throw new Error("down"); }, input), null);
+  assert.equal(await spokenNarration(async () => "not json", input), null);
+  assert.equal(await spokenNarration(null, input), null);
+  assert.equal(narrationPrompt(input).includes("No lists"), true);
+});
+
+test("speak: reads the Gemini narration, generated once per receipt", async (t) => {
+  const scripts = [];
+  let llmCalls = 0;
+  const s = await setup({
+    llm: () => async () => { llmCalls++; return JSON.stringify({ narration: "You agreed to SnapPix's terms, and the risk is high. They can sell your personal data to advertising partners." }); },
+    speech: async (script) => { scripts.push(script); return Buffer.from("ID3audio"); },
+  });
+  t.after(s.close);
+  const { token } = await s.signup();
+  const body = { site: "snappix.com", summary: { risk: "high", claims: [{ text: "They can sell your data", sourceSentence: "We may sell your personal data to advertising partners." }] }, actions: [] };
+  assert.equal((await s.call("/api/speak", { body, auth: token })).status, 200);
+  assert.equal((await s.call("/api/speak", { body, auth: token })).status, 200);
+  assert.deepEqual(scripts, ["You agreed to SnapPix's terms, and the risk is high. They can sell your personal data to advertising partners."]);
+  assert.equal(llmCalls, 1, "cached after the first listen");
+  // A different site is a different receipt.
+  assert.equal((await s.call("/api/speak", { body: { ...body, site: "other.com" }, auth: token })).status, 200);
+  assert.equal(llmCalls, 2);
 });

@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { summarize } from "../../extension/lib/summary/summarize.js";
 import { hashPassword, verifyPassword, DUMMY_HASH, createSession, userForToken, deleteSession, parseCookies, sha256, SESSION_TTL } from "./auth.js";
 import { rateLimiter } from "./ratelimit.js";
-import { receiptScript } from "./speech.js";
+import { listenInput, listScript, spokenNarration, NARRATION_VERSION } from "./speech.js";
 
 const PUBLIC_DIR = fileURLToPath(new URL("../public", import.meta.url));
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -211,8 +211,9 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
   // ElevenLabs: read a receipt aloud. 3 listens a day on Free, unlimited (rate limited) on Pro. Audio is cached per script.
   app.post("/api/speak", requireExt, async (req, res) => {
     if (!speech) return res.status(503).json({ error: "Listening is not available right now." });
-    const script = receiptScript(req.body?.summary);
-    const key = sha256(script);
+    const input = listenInput(req.body);
+    // Same receipt, same audio: the cache key covers everything the narration is written from.
+    const key = sha256(`${NARRATION_VERSION}\n${JSON.stringify(input)}`);
     const pro = planOf(req.user) === "pro";
     if (!listenLimit.hit(String(req.user.id))) return res.status(429).json({ error: "Too many listens this hour." });
     const day = new Date().toISOString().slice(0, 10);
@@ -222,6 +223,8 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     }
     let mp3 = db.prepare("SELECT mp3 FROM audio_cache WHERE key = ?").get(key)?.mp3;
     if (!mp3) {
+      // Gemini writes a natural spoken summary from the receipt; if that fails, read the plain list.
+      const script = (await spokenNarration(llm(), input)) || listScript(input);
       try {
         mp3 = await speech(script);
       } catch (e) {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Consent Receipts",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Keeps a plain words receipt when you click Agree, cites the clause behind each risk, and alerts you when the terms change.",
   "homepage_url": "https://whatyousignupfor.us",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzWCv1his7JniG8TSjm8JG4Y/XAi07Aklti5pvwhNtoigUP2Awy0o4yvV5bVgNGZH2tq6jlBu3ZVHtnC7TmmTsPZiILsMQRu1YOvLgKuiHoDQkwhdJHm8YpHV9D3pKYZVdrOy2G/Fo86vSfqCnC5Ud91e8SC3VpC3PXrl5xuvmY1q8RjAIhtPS4hyRj3mcwO4VCUKA+Da/soqESdEdklYuyztO2KNB/JHz8+eoNtk+jHJ+CfWWvjvOzdMM5AfIS4ADriazYPEkD9BsTDvpZ5Y1o2SwxGfLw5J9oNTipyeMD52wiPf/70bKAawUSAP70QGqG4yqv2aKfGy6y2GGMvL4QIDAQAB",

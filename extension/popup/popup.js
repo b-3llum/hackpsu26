@@ -40,25 +40,45 @@ function tracked(r) {
   return n ? `<div class="tiny">This policy changed ${n} time${n === 1 ? "" : "s"} in the last 90 days across Consent Receipts users. <a href="${SITE}/changes" target="_blank" rel="noopener">See the tracker</a></div>` : "";
 }
 
+// While a listen is loading or playing, re-renders wait (they would replace its button and status line).
 let playing = null;
+let listening = false;
+let renderPending = false;
+
+function listenDone(button, status, text = "") {
+  button.textContent = "\u25B6 Listen";
+  status.textContent = text;
+  playing = null;
+  listening = false;
+  if (renderPending) { renderPending = false; rerender(); }
+}
+
 async function listen(button, receipt) {
   const status = button.closest(".receipt").querySelector(".listen-status");
-  if (playing) { playing.audio.pause(); const was = playing.button; playing.button.textContent = "\u25B6 Listen"; playing = null; if (was === button) return; }
+  if (playing) {
+    const was = playing;
+    was.audio.pause();
+    listenDone(was.button, was.status);
+    if (was.button === button) return;
+  }
+  listening = true;
   button.disabled = true;
-  status.textContent = "Getting audio...";
-  const { audio, error, status: code } = await speakSummary(receipt.summary);
+  status.textContent = "Writing your spoken summary...";
+  const actions = suggestActions(receipt).map((a) => a.title);
+  const { audio, error, status: code } = await speakSummary(receipt.summary, { site: receipt.domain, actions });
   button.disabled = false;
   if (error) {
+    listenDone(button, status);
     status.innerHTML = code === 401 ? `${esc(error)} <a href="${SITE}/login?ext=1" target="_blank" rel="noopener">Sign in</a>`
       : code === 402 ? `${esc(error)} <a href="${SITE}/account" target="_blank" rel="noopener">Upgrade</a>` : esc(error);
     return;
   }
   const el = new Audio(URL.createObjectURL(audio));
-  playing = { audio: el, button };
+  playing = { audio: el, button, status };
   button.textContent = "\u25A0 Stop";
-  status.textContent = "Reading this receipt aloud (voice by ElevenLabs).";
-  el.onended = () => { button.textContent = "\u25B6 Listen"; status.textContent = ""; playing = null; };
-  el.play();
+  status.textContent = "Reading a summary of this receipt aloud (written by Gemini, voice by ElevenLabs).";
+  el.onended = () => listenDone(button, status);
+  el.play().catch(() => listenDone(button, status, "Could not play the audio."));
 }
 
 function trustLine(s) {
@@ -109,7 +129,11 @@ $("#list").addEventListener("click", async (e) => {
     if (confirm("Delete this receipt?")) { await send({ type: "delete", id: c.dataset.id }); render(); }
     return;
   }
-  if (e.target.closest(".row")) { c.classList.toggle("open"); send({ type: "markRead", id: c.dataset.id }); }
+  if (e.target.closest(".row")) {
+    c.classList.toggle("open");
+    // Only unread receipts need saving; a save re-renders the popup.
+    if (c.querySelector(".new")) send({ type: "markRead", id: c.dataset.id });
+  }
 });
 
 $("#check").onclick = async () => {
@@ -138,10 +162,14 @@ $("#html").onclick = async () => {
 };
 
 // Re-render when receipts change (a Gemini summary arriving, a check finishing), keeping open cards open.
-chrome.storage.onChanged.addListener((changes) => {
-  if (!changes.receipts) return;
+function rerender() {
   const open = new Set([...document.querySelectorAll(".receipt.open")].map((c) => c.dataset.id));
   render().then(() => document.querySelectorAll(".receipt").forEach((c) => { if (open.has(c.dataset.id)) c.classList.add("open"); }));
+}
+chrome.storage.onChanged.addListener((changes) => {
+  if (!changes.receipts) return;
+  if (listening) { renderPending = true; return; }
+  rerender();
 });
 
 render();

@@ -51,7 +51,7 @@ Receipts and the rule based summaries stay in your browser. No account needed.
 
 Optional account (https://whatyousignupfor.us)
 - A free account turns on Pro: AI summaries (Google Gemini) that must cite a policy sentence for every point, with a trust score. Rule based findings always stay, so the AI cannot hide a flagged clause.
-- Listen: hear a receipt read aloud (ElevenLabs).
+- Listen: hear a short spoken summary of a receipt (written by Gemini, read by ElevenLabs).
 - A public tracker of which policies changed this week, built from anonymous change reports.
 
 Not legal advice. Summaries can miss things; the cited sentence and the full policy are always one click away.
@@ -83,7 +83,7 @@ Keep a record of the terms and privacy policies you agree to on websites, explai
 | --- | --- | --- |
 | Personally identifiable information | Yes | Name and email for the optional account (entered on our website; the extension stores the email to show who is signed in). |
 | Authentication information | Yes | A sign in token from our website, stored by the extension to call Pro features. |
-| Website content | Yes | Pro only: the public text of a policy you agreed to, sent to our server to create the AI summary. Listen: the summary text. |
+| Website content | Yes | Pro only: the public text of a policy you agreed to, sent to our server to create the AI summary. Listen: the receipt's site name, points, their policy sentences, and next steps, used to write and read a spoken summary. |
 | Web history | Yes | Signed in users only: when a saved policy changes, its address (query string and fragment removed in the extension before sending), a hash of its text, and the risk level go to our anonymous change tracker. Stored without any user id. |
 | Health, financial and payment, personal communications, location, user activity | No | Payments happen on Stripe's site, not in the extension. |
 
