@@ -1,12 +1,12 @@
 # Backup demo video: script and shot list
 
-Goal: a 90 second screen recording that matches the live demo in `docs/PITCH.md` (0:50 to 2:20), so we can play it if anything fails on stage.
+Goal: a 90 second screen recording that matches the live demo in `docs/hackathon/PITCH.md` (0:50 to 2:20), so we can play it if anything fails on stage.
 
 ## Setup before recording
 1. Load the unpacked extension from `/extension` in Chrome (chrome://extensions, Developer mode, Load unpacked).
 2. Clear old receipts so the popup starts empty (Settings > Clear all receipts).
 3. Serve the demo: `cd extension/demo && python3 -m http.server 8000`.
-4. Recommended: add a Gemini key in Settings so the video shows AI tags and the trust score (the default model gemini-3.5-flash-lite answers in about 1 s). Without a key the rules summary is shown; record whichever one we will demo live.
+4. Recommended: sign in with a free account (Settings > Sign in, then Connect the extension) so the video shows AI tags, the trust score, and Listen. Without an account the rule based summary is shown; record whichever one we will demo live.
 5. Pin the extension icon, close other tabs, zoom the page to about 125% so text is readable in the video.
 
 ## Script (about 90 seconds)
@@ -31,9 +31,9 @@ Goal: a 90 second screen recording that matches the live demo in `docs/PITCH.md`
 5. The diff view of changed terms at High risk.
 6. Finance mode flags (auto renewal, late fee).
 7. What to do next list, with one drafted request expanded.
-8. Settings page showing Demo tools and the optional Gemini key field (key hidden).
+8. Settings page showing the signed in account and the Demo tools.
 
 ## Notes
-- In the demo pages, the finance terms (auto renewal, late fee) only appear in `terms-v2.html`, so finance flags show after the terms change, not on the first receipt. `docs/PITCH.md` now lists finance mode after the change to match.
+- In the demo pages, the finance terms (auto renewal, late fee) only appear in `terms-v2.html`, so finance flags show after the terms change, not on the first receipt. `docs/hackathon/PITCH.md` now lists finance mode after the change to match.
 - Record at 1280x800 or larger, no personal tabs, bookmarks, or keys visible.
 - Save the final video in the Devpost Links and media section and keep a local copy on the demo laptop.

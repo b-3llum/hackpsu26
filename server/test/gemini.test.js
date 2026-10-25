@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { geminiLlm, GEMINI_BASE, DEFAULT_MODEL } from "../lib/gemini.js";
+import { geminiLlm, GEMINI_BASE, DEFAULT_MODEL } from "../src/gemini.js";
 
 const reply = (body, ok = true, status = 200) => async () => ({ ok, status, json: async () => body, text: async () => JSON.stringify(body) });
 

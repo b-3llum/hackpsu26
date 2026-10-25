@@ -4,15 +4,15 @@ Guidance for Claude Code (and any agent) working in this repo. Human overview: [
 
 ## Project
 
-Consent Receipts, built at HackPSU Fall 26 (Oct 24 to 25, 2026). A Chrome MV3 extension that saves a receipt for every Agree click, summarizes the terms with a cited source sentence for every point, scores risk, flags money clauses, suggests next actions, and alerts on policy changes. The hosted site https://whatyousignupfor.us adds accounts, Stripe (test mode) Pro at $3/month, server side Gemini summaries, ElevenLabs Listen, a Tiger Data terms change tracker, and Auth0 Google sign in.
+Consent Receipts, built at HackPSU Fall 26 (Oct 24 to 25, 2026). A Chrome MV3 extension that saves a receipt for every Agree click, summarizes the terms with a cited source sentence for every point, scores risk, flags money clauses, suggests next actions, and alerts on policy changes. The hosted site https://whatyousignupfor.us adds free accounts that turn on Pro (server side Gemini summaries, Listen: a Gemini written spoken summary read by ElevenLabs), a Tiger Data terms change tracker, Auth0 Google sign in, an install page with a download, and Stripe billing (built, switched off by `FREE_PRO=1`).
 
 Deadline: Devpost submission **Sun Oct 25, 2:00 PM EDT**. Prefer small, verified, demo safe changes over big rewrites.
 
 ## Layout
 
-- `extension/`: the extension. Plain ES modules, **no build step, no npm dependencies**. Entry points: `background.js` (module service worker), `content.js` (classic script, every frame), `popup/`, `options/`. Logic lives in `lib/` (`summary/`, `finance/`, `actions/`, `account.js`, `policy.js`, `gemini.js`, `settings.js`).
-- `server/`: Node 24 + Express 5 + `node:sqlite`. `src/app.js` has every route; `src/index.js` wires config from env. Pages in `public/` (no inline scripts or styles). Deploy files in `deploy/`.
-- `docs/`: Devpost draft, pitch, demo script. `REQUIREMENTS.md`: the agreed plan.
+- `extension/`: the extension. Plain ES modules, **no build step, no npm dependencies**. Entry points: `background.js` (module service worker), `content.js` (classic script, every frame), `popup/`, `options/`. Logic lives in `lib/` (`summary/`, `finance/`, `actions/`, `account.js`, `policy.js`, `settings.js`). `tools/build-store.mjs` builds the store zip and (`--download`) the website download.
+- `server/`: Node 24 + Express 5 + `node:sqlite`. `src/app.js` has every route; `src/index.js` wires config from env; `src/gemini.js`, `speech.js` (ElevenLabs and the Listen narration), `changes.js` (Tiger Data), `auth0.js`. Pages in `public/` (no inline scripts or styles). Deploy files and `env.example` in `deploy/`.
+- `docs/`: Chrome Web Store kit and images. `docs/hackathon/`: Devpost text, pitch, demo script, original plan.
 
 ## Commands
 
@@ -62,4 +62,7 @@ Run both test suites before every PR. For behavior changes, also verify in a rea
 - Cloudflare injects an analytics beacon; the CSP blocks it on purpose.
 - The tracker ignores localhost, IP, and single label hosts, and the extension never reports changes made by the Simulate demo tools.
 - zsh: `$VAR:e` style text after a variable is a history modifier; write `${VAR}:...`. `pkill -f` inside an ssh command can match and kill its own shell.
-- HackPSU rules: "Use of an existing project is not allowed." The prior work question for Nafiz's prototype is open with the organizers; keep `docs/DEVPOST.md` accurate.
+- HackPSU rules: "Use of an existing project is not allowed." The prior work question for Nafiz's prototype is open with the organizers; keep `docs/hackathon/DEVPOST.md` accurate and do not claim organizer approval without a written answer.
+- Listen audio is 32 kbps (`mp3_22050_32`); 128 kbps was 4x larger and slow through Cloudflare. Bump `NARRATION_VERSION` in `server/src/speech.js` when the narration prompt changes so cached audio is regenerated.
+- The popup re-renders on storage changes; anything stateful in it (like Listen) must survive or defer re-renders.
+- `deploy.sh` updates itself mid run: after changing it, deploy twice. Cloudflare caches `.zip` for hours, so download links carry `?v=<build time>`.

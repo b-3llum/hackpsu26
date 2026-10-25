@@ -41,7 +41,7 @@ Use `splitSentences` from this module in `lib/summary` too so `sourceIndex` valu
 ## Tests
 
 ```
-cd extension/lib/finance && node --test
+cd extension && npm test
 ```
 Fixtures in `test/fixtures/`: bank account agreement, streaming subscription ToS, loan disclosure, and a clean policy with no hits.
 

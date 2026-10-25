@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { mkdirSync } from "node:fs";
 import { openDb } from "./db.js";
 import { createApp } from "./app.js";
-import { geminiLlm } from "../../extension/lib/gemini.js";
+import { geminiLlm } from "./gemini.js";
 import { elevenSpeech } from "./speech.js";
 import { openChangeStore } from "./changes.js";
 import { auth0Client } from "./auth0.js";

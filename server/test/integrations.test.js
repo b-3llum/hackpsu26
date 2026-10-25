@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { openDb } from "../src/db.js";
 import { createApp } from "../src/app.js";
-import { receiptScript, listenInput, listScript, spokenNarration, narrationPrompt } from "../src/speech.js";
+import { listenInput, listScript, spokenNarration, narrationPrompt } from "../src/speech.js";
 
 const ORIGIN = "https://whatyousignupfor.us";
 
@@ -27,11 +27,11 @@ async function setup(extra = {}) {
 
 const SUMMARY = { risk: "high", claims: [{ text: "They can sell your data" }, { text: "They can sell your data" }, { text: "You give up the right to sue in court." }] };
 
-test("receiptScript: risk, unique points, no site name, capped length", () => {
-  const s = receiptScript({ ...SUMMARY, domain: "secret.example" });
+test("listScript: risk, unique points, capped length", () => {
+  const s = listScript(listenInput({ summary: SUMMARY }));
   assert.equal(s, "Here is your consent receipt. Overall risk: high. What you agreed to: They can sell your data. You give up the right to sue in court.");
   assert.ok(!s.includes("secret.example"));
-  const long = receiptScript({ risk: "low", claims: Array.from({ length: 200 }, (_, i) => ({ text: `Point number ${i} about something that the policy says in a fairly long sentence` })) });
+  const long = listScript(listenInput({ summary: { risk: "low", claims: Array.from({ length: 200 }, (_, i) => ({ text: `Point number ${i} about something that the policy says in a fairly long sentence` })) } }));
   assert.ok(long.length <= 1240 && long.endsWith("And more points in the receipt."));
 });
 
