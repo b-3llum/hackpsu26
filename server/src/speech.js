@@ -4,7 +4,7 @@ export const DEFAULT_VOICE = "JBFqnCBsd6RMkjVDRZzb";
 export const DEFAULT_TTS_MODEL = "eleven_flash_v2_5";
 const MAX_SCRIPT = 1200;
 // Bump when the narration prompt changes, so cached audio is regenerated.
-export const NARRATION_VERSION = "n1";
+export const NARRATION_VERSION = "n2";
 
 /** @returns {((text: string) => Promise<Buffer>) | null} null when no key is set */
 export function elevenSpeech({ apiKey, voiceId = DEFAULT_VOICE, model = DEFAULT_TTS_MODEL, fetchImpl = fetch, timeoutMs = 20000 }) {
@@ -60,21 +60,22 @@ export function receiptScript(summary) {
 
 export function narrationPrompt(input) {
   const lines = input.points.map((p, i) => `${i + 1}. ${p.text}${p.source ? `\n   Policy says: "${p.source}"` : ""}`).join("\n");
+  const next = input.actions[0];
   return [
-    "Write a short spoken summary of the terms someone agreed to, to be read aloud to them by a text to speech voice.",
-    `Site: ${input.site || "this site"} (say the site's name naturally, for example "CrowdStrike" for crowdstrike.com).`,
+    "Write a short spoken summary of the terms someone agreed to. A text to speech voice will read it to them.",
+    `Site: ${input.site || "this site"}. Say its name the way people say it (for example "CrowdStrike" for crowdstrike.com, "SnapPix" for snappix.com).`,
     `Overall risk: ${input.risk}.`,
     "What the policy says (use only these facts):",
     lines || "(nothing notable)",
-    input.actions.length ? `Suggested next steps: ${input.actions.join("; ")}.` : "",
     "",
     "Rules:",
-    "- Talk to the listener as \"you\". Plain, calm words. 60 to 110 words.",
-    "- Start with the site and the overall risk. Then the most important points first, using specifics from the policy sentences (who gets the data, amounts, how often). Group related points.",
-    "- Mention money terms (fees, renewals, rate changes) if there are any.",
-    "- End with the single most useful next step, if one is given.",
+    `- Begin exactly like this: "You agreed to <site name>'s terms. The overall risk is ${input.risk}."`,
+    "- Then at most five points, most important first: selling or sharing your data, biometrics or location, AI training on your content, giving up the right to sue, money terms (fees, renewals, rate changes), keeping data. Skip routine cookie or analytics points unless nothing else is flagged.",
+    "- Use specifics from the policy sentences (who gets the data, amounts, how often). Keep amounts as written, like $4.99.",
+    next ? `- End with exactly one sentence that starts "Your best next step:" and says this in plain words: ${next}.` : "- End with one sentence suggesting they check the receipt for details.",
+    "- 60 to 100 words in total. Talk to the listener as \"you\". Plain, calm words. Full sentences only.",
     "- Only state what the policy sentences say. No legal advice, no guessing, no numbers that are not in the text.",
-    "- No lists, headings, symbols, emoji, or dashes. Write full sentences.",
+    "- No lists, headings, symbols, emoji, or dashes.",
     'Reply with JSON only: {"narration": "..."}',
   ].filter(Boolean).join("\n");
 }

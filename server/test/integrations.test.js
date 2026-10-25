@@ -167,7 +167,8 @@ test("spoken narration: Gemini writes it from the cited sentences, cleaned; fall
   assert.equal(text, "You agreed to SnapPix's terms, and the risk is high. They can sell your personal data to advertising partners. Your best next step is to opt out of the sale.");
   assert.match(prompt, /Site: snappix\.com/);
   assert.match(prompt, /Policy says: "We may sell your personal data to advertising partners\."/);
-  assert.match(prompt, /Suggested next steps: Opt out of the sale/);
+  assert.match(prompt, /Begin exactly like this: "You agreed to <site name>'s terms\. The overall risk is high\."/);
+  assert.match(prompt, /starts "Your best next step:" and says this in plain words: Opt out of the sale\./);
   assert.equal(await spokenNarration(async () => { throw new Error("down"); }, input), null);
   assert.equal(await spokenNarration(async () => "not json", input), null);
   assert.equal(await spokenNarration(null, input), null);
