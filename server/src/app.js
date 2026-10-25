@@ -13,7 +13,7 @@ const PRO_STATUSES = new Set(["active", "trialing"]);
 /**
  * @param {object} o
  * @param {import("node:sqlite").DatabaseSync} o.db
- * @param {{ publicUrl: string, extensionId: string, stripePriceId: string, stripeWebhookSecret: string, secureCookies?: boolean }} o.config
+ * @param {{ publicUrl: string, extensionId: string (one ID or a comma separated list), stripePriceId: string, stripeWebhookSecret: string, secureCookies?: boolean }} o.config
  * @param {object|null} o.stripe Stripe client, or null when billing is not configured
  * @param {(() => ((prompt: string) => Promise<string>) | null)} o.llm returns the Gemini function for summaries
  * @param {((text: string) => Promise<Buffer>) | null} [o.speech] ElevenLabs text to speech, or null
@@ -23,7 +23,9 @@ const PRO_STATUSES = new Set(["active", "trialing"]);
 export function createApp({ db, config, stripe, llm, speech = null, changes = null, auth0 = null }) {
   const app = express();
   const origin = new URL(config.publicUrl).origin;
-  const extensionOrigin = `chrome-extension://${config.extensionId}`;
+  // EXTENSION_ID may list several IDs (comma separated): the unpacked developer build and the Chrome Web Store build.
+  const extensionIds = String(config.extensionId || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const extensionOrigins = new Set(extensionIds.map((id) => `chrome-extension://${id}`));
   const cookieFlags = `Path=/; HttpOnly; SameSite=Lax${config.secureCookies === false ? "" : "; Secure"}`;
 
   app.disable("x-powered-by");
@@ -68,7 +70,7 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     if (req.method === "GET") return next();
     if (!req.is("application/json")) return res.status(415).json({ error: "Send JSON." });
     const o = req.get("origin");
-    if (o && o !== origin && o !== extensionOrigin) return res.status(403).json({ error: "Bad origin." });
+    if (o && o !== origin && !extensionOrigins.has(o)) return res.status(403).json({ error: "Bad origin." });
     next();
   });
 
@@ -102,7 +104,8 @@ export function createApp({ db, config, stripe, llm, speech = null, changes = nu
     res.append("Set-Cookie", `sid=${token}; ${cookieFlags}; Max-Age=${SESSION_TTL.web / 1000}`);
 
   app.get("/api/config", (req, res) => res.json({
-    extensionId: config.extensionId,
+    extensionId: extensionIds[0] || "",
+    extensionIds,
     billing: Boolean(stripe),
     google: Boolean(auth0),
     listen: Boolean(speech),

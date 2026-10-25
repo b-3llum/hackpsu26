@@ -159,6 +159,20 @@ test("checkout and webhook upgrade the account to Pro, cancel downgrades it", as
   assert.equal((await s.call("/api/me", { method: "GET" })).json.user.plan, "free");
 });
 
+test("several extension IDs: each origin is allowed and listed in config", async (t) => {
+  const db = openDb(":memory:");
+  const app = createApp({ db, stripe: null, llm: () => null, config: { publicUrl: ORIGIN, extensionId: `${EXT_ID}, storeidstoreidstoreidstoreidstore`, secureCookies: false } });
+  const server = await new Promise((r) => { const s = app.listen(0, "127.0.0.1", () => r(s)); });
+  t.after(() => server.close());
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const cfg = await (await fetch(`${base}/api/config`)).json();
+  assert.deepEqual(cfg.extensionIds, [EXT_ID, "storeidstoreidstoreidstoreidstore"]);
+  const post = (origin) => fetch(`${base}/api/extension/logout`, { method: "POST", headers: { "content-type": "application/json", origin }, body: "{}" });
+  assert.equal((await post("chrome-extension://storeidstoreidstoreidstoreidstore")).status, 200);
+  assert.equal((await post(`chrome-extension://${EXT_ID}`)).status, 200);
+  assert.equal((await post("chrome-extension://someotherextensionidxxxxxxxxxxxx")).status, 403);
+});
+
 test("security headers are set", async (t) => {
   const s = await setup(); t.after(s.close);
   const r = await s.call("/api/config", { method: "GET" });
