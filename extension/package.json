@@ -1,1 +1,1 @@
-{ "name": "consent-receipts", "private": true, "type": "module", "scripts": { "test": "node --test" } }
+{ "name": "consent-receipts", "private": true, "license": "MIT", "type": "module", "scripts": { "test": "node --test" } }

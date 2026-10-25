@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consent Receipts: know what you agreed to</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/"><img class="brand-logo" src="/logo.png" width="32" height="32" alt="">Consent Receipts</a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#product">Product</a>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="header-actions">
+        <a class="link" href="/login">Log in</a>
+        <a class="btn btn-primary btn-sm" href="/signup">Sign up</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <p class="eyebrow">A browser extension for everyone who clicks Agree</p>
+      <h1>Know what you signed up for.</h1>
+      <p class="lede">Consent Receipts keeps a plain words receipt every time you click Agree, shows the exact sentence behind every risk, and tells you when the terms change.</p>
+      <div class="row">
+        <a class="btn btn-primary btn-lg" href="/signup">Sign up</a>
+        <a class="btn btn-secondary btn-lg" href="#how">See how it works <span aria-hidden="true">&darr;</span></a>
+      </div>
+      <div class="showcase">
+        <div class="window window-popup">
+          <img src="/img/popup.png" width="400" height="640" alt="The Consent Receipts popup showing a High risk receipt, with each point linked to the policy sentence it came from">
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="product">
+      <h2>A receipt for every Agree.</h2>
+      <p class="lede">Consent Receipts is a Chrome extension. When you click Agree, Accept all, Allow, or tick an "I agree" box, it saves a receipt with the site, the time, the button you clicked, the policy links, and the cookie categories. Then it reads the terms for you, scores the risk as Low, Medium, or High, and links every point back to the sentence it came from.</p>
+    </section>
+
+    <section class="section container" id="problem">
+      <h2>Nobody reads the terms. They still count.</h2>
+      <p class="lede">Terms of service, cookie banners, and bank or subscription agreements decide whether your data is sold, whether a plan renews on its own, and which fees you can be charged. They are long, they are written for lawyers, and they can change quietly after you sign up. Most of us click Agree and hope for the best.</p>
+    </section>
+
+    <section class="section container" id="how">
+      <h2>How it works</h2>
+      <p class="lede">Three steps, and the first one is the click you were going to make anyway.</p>
+      <div class="grid-3">
+        <div class="card card-pad step">
+          <span class="step-num">01</span>
+          <h3>Click Agree like normal</h3>
+          <p>The extension notices consent clicks on regular pages and on OneTrust, Cookiebot, and TrustArc banners, and saves a receipt in your browser.</p>
+        </div>
+        <div class="card card-pad step">
+          <span class="step-num">02</span>
+          <h3>Read the receipt</h3>
+          <p>Open the popup to see a plain words summary and a risk score. Expand any point to see the exact policy sentence behind it.</p>
+        </div>
+        <div class="card card-pad step">
+          <span class="step-num">03</span>
+          <h3>Act, and stay updated</h3>
+          <p>Get suggested next steps with a drafted request you can copy, and a notice with a diff when a saved policy changes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="features">
+      <h2>Features</h2>
+      <p class="lede">Built to be checked, not just trusted.</p>
+      <div class="grid-3">
+        <div class="card card-pad feature">
+          <h3>Cited summaries</h3>
+          <p>Every point in a summary expands to the policy sentence it came from, so you can verify it yourself.</p>
+        </div>
+        <div class="card card-pad feature">
+          <h3>Risk score with reasons</h3>
+          <p>Low, Medium, or High, with the reasons listed: data sale, tracking, location, biometrics, retention, arbitration, auto renewal, AI training on your content, and terms that can change.</p>
+        </div>
+        <div class="card card-pad feature">
+          <h3>Finance mode</h3>
+          <p>Flags fees, interest rate changes, overdraft terms, late payments, minimum balances, and auto renewals in bank, loan, and subscription terms.</p>
+        </div>
+        <div class="card card-pad feature">
+          <h3>Change alerts</h3>
+          <p>Saved policies are checked daily or on demand. When one changes, you get a notice and a diff of what changed.</p>
+        </div>
+        <div class="card card-pad feature">
+          <h3>What to do next</h3>
+          <p>Suggested actions such as opting out of data sale, AI training, or arbitration, canceling before a renewal, or requesting deletion, each with a drafted request and the cited sentence.</p>
+        </div>
+        <div class="card card-pad feature">
+          <h3>Gemini summaries on Pro</h3>
+          <p>Gemini has to cite a numbered policy sentence for every point. Points without a real source are dropped and lower a visible trust score, and the rule based findings always stay.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="pricing">
+      <h2>Free and Pro</h2>
+      <p class="lede">Everything that runs in your browser is free. Pro adds Gemini summaries that run on our server. Checkout uses Stripe in test mode for HackPSU Fall 26, so no real charges are made.</p>
+      <div class="grid-2">
+        <div class="card card-pad">
+          <span class="badge badge-free">Free</span>
+          <p class="price">$0 <small>forever</small></p>
+          <ul class="ticks">
+            <li>Receipts for every Agree, stored in your browser</li>
+            <li>Rule based summaries and risk scores with cited sentences</li>
+            <li>Policy change alerts with a diff</li>
+            <li>Finance mode flags</li>
+            <li>What to do next actions and drafted requests</li>
+            <li>Export receipts as JSON or a printable receipt</li>
+          </ul>
+          <a class="btn btn-secondary btn-block" href="/signup">Sign up free</a>
+        </div>
+        <div class="card card-pad">
+          <span class="badge badge-pro">Pro</span>
+          <p class="price">$3 <small>per month</small></p>
+          <ul class="ticks">
+            <li>Everything in Free</li>
+            <li>Gemini summaries with citations for every point</li>
+            <li>A trust score that drops when the AI cannot back a point</li>
+            <li>Runs on our server, so you never need your own API key</li>
+          </ul>
+          <a class="btn btn-primary btn-block" href="/signup">Get Pro</a>
+          <p class="hint">Stripe test mode during the hackathon. No real charges.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container faq" id="faq">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Is it free?</summary>
+        <p>Yes. Receipts, rule based summaries, change alerts, finance flags, and next actions are free and run in your browser. Pro is $3 per month and adds Gemini summaries.</p>
+      </details>
+      <details>
+        <summary>Will I be charged?</summary>
+        <p>Not during HackPSU Fall 26. Checkout runs in Stripe test mode, so no real payment is taken.</p>
+      </details>
+      <details>
+        <summary>What data leaves my browser?</summary>
+        <p>On Free, your receipts stay in your browser. Pro sends the public policy text to our server; summaries are cached per policy; we don't keep a record of which sites you visit.</p>
+      </details>
+      <details>
+        <summary>Can I trust an AI summary?</summary>
+        <p>You don't have to take it on faith. Every Gemini point must cite a sentence from the policy, points without a real source are dropped and lower the trust score, and the rule based findings are always shown alongside.</p>
+      </details>
+      <details>
+        <summary>Is this legal advice?</summary>
+        <p>No. Consent Receipts helps you read and keep track of terms. For a legal question, talk to a lawyer.</p>
+      </details>
+      <details>
+        <summary>Which browsers does it support?</summary>
+        <p>Chrome, as a Manifest V3 extension.</p>
+      </details>
+    </section>
+
+    <section class="cta">
+      <h2>Stop guessing what you agreed to.</h2>
+      <p class="lede">Keep a receipt for every Agree, starting with the next one.</p>
+      <div class="row">
+        <a class="btn btn-primary btn-lg" href="/signup">Sign up</a>
+        <a class="btn btn-secondary btn-lg" href="#how">See how it works</a>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Legal">
+        <a href="/legal/terms">Terms of Service</a>
+        <a href="/legal/privacy">Privacy Policy</a>
+      </nav>
+      <div>&copy; 2026 Consent Receipts. Built at HackPSU Fall 26.</div>
+    </div>
+  </footer>
+</body>
+</html>

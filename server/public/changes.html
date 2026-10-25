@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms changes this week · Consent Receipts</title>
+  <meta name="description" content="Which terms of service and privacy policies changed recently, and whether the risk went up or down.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+  <header class="site-header"><div class="container"><a class="brand" href="/"><img class="brand-logo" src="/logo.png" width="32" height="32" alt="">Consent Receipts</a><a class="back-link" href="/"><span aria-hidden="true">&larr;</span> Back to home</a></div></header>
+
+  <main class="page-main">
+    <div class="page-head">
+      <p class="eyebrow">Terms change tracker</p>
+      <h1>What changed this week</h1>
+      <p>When a Consent Receipts extension notices that a policy changed, it reports the change without saying who you are. These are the policies that changed in the last 7 days, and whether the risk went up or down.</p>
+    </div>
+
+    <div class="stack">
+      <div class="alert alert-info" role="status" id="status">Loading recent changes...</div>
+
+      <section class="card panel" aria-labelledby="week-h" id="week" hidden>
+        <h2 id="week-h">Changed in the last 7 days</h2>
+        <ul class="changes-list" id="events"></ul>
+        <p class="hint" id="events-empty" hidden>No policy changes were reported in the last 7 days.</p>
+      </section>
+
+      <section class="card panel" aria-labelledby="hosts-h" id="hosts" hidden>
+        <h2 id="hosts-h">Most changed in the last 90 days</h2>
+        <ul class="changes-list" id="by-host"></ul>
+      </section>
+
+      <p class="hint">Change events store only the policy address (without query strings), a hash of the text, the risk level before and after, and the time. No user id or browsing history. See our <a href="/legal/privacy">Privacy Policy</a>.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Legal">
+        <a href="/legal/terms">Terms of Service</a>
+        <a href="/legal/privacy">Privacy Policy</a>
+      </nav>
+      <div>&copy; 2026 Consent Receipts. Built at HackPSU Fall 26.</div>
+    </div>
+  </footer>
+  <script type="module" src="/js/changes.js"></script>
+</body>
+</html>

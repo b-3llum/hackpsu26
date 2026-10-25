@@ -27,3 +27,4 @@ a{color:#1a5fb4;word-break:break-all}.added{color:var(--low)}.removed{color:var(
 .tag.fin{background:#e7f0fd;color:#1a5fb4}.tag.ai{background:#f3e8fd;color:#7b2cbf}
 .trust{font-size:11px;color:var(--mut);margin:2px 0 6px}
 .draft{white-space:pre-wrap;font:inherit;font-size:11px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin:4px 0}
+header h1{display:flex;align-items:center;gap:8px}header h1 .logo{width:22px;height:22px;border-radius:5px}

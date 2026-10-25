@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your account · Consent Receipts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/"><img class="brand-logo" src="/logo.png" width="32" height="32" alt="">Consent Receipts</a>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="logout" type="button">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main" id="main" hidden>
+    <div class="page-head">
+      <h1>Your account</h1>
+      <p id="who"></p>
+    </div>
+
+    <div class="stack">
+      <div class="alert" role="status" id="notice" hidden></div>
+
+      <section class="card panel" aria-labelledby="plan-h">
+        <div class="row spread">
+          <h2 id="plan-h">Plan</h2>
+          <span class="badge" id="plan-badge"></span>
+        </div>
+
+        <div id="plan-free" hidden>
+          <p class="sub">Free keeps a receipt for every Agree click, with rule based summaries, change alerts, finance flags, and next steps. Everything stays in your browser.</p>
+          <div class="price">$3 <small>per month</small></div>
+          <ul class="ticks">
+            <li>AI summaries from Gemini, every point linked to the sentence it came from</li>
+            <li>A trust score that shows how much of the summary is backed by the policy</li>
+            <li>Rule based findings always stay, so AI cannot hide a flagged clause</li>
+            <li>Cancel any time from the billing page</li>
+          </ul>
+          <button class="btn btn-primary" id="upgrade" type="button">Upgrade to Pro</button>
+          <p class="hint" id="billing-off" hidden>Billing is being set up. Check back soon.</p>
+        </div>
+
+        <div id="plan-pro" hidden>
+          <p class="sub">AI summaries are on in the extension once it is connected below.</p>
+          <dl class="kv">
+            <dt>Status</dt><dd id="pro-status"></dd>
+            <dt id="period-label">Renews</dt><dd id="pro-period"></dd>
+          </dl>
+          <div class="row mt-20">
+            <button class="btn btn-secondary" id="portal" type="button">Manage billing</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card panel" aria-labelledby="ext-h">
+        <div class="row spread">
+          <h2 id="ext-h">Browser extension</h2>
+          <span class="badge badge-free" id="ext-badge">Not connected</span>
+        </div>
+        <p class="sub">Connect the Consent Receipts extension to this account so Pro summaries work in your browser.</p>
+        <div class="row">
+          <button class="btn btn-primary" id="connect" type="button">Connect the extension</button>
+        </div>
+        <div class="alert alert-info mt-16" id="no-ext" hidden>
+          We could not find the extension in this browser. Install it first: open <strong>chrome://extensions</strong>, turn on Developer mode, click <strong>Load unpacked</strong>, and pick the <strong>extension</strong> folder from the project. Then reload this page.
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Legal">
+        <a href="/legal/terms">Terms of Service</a>
+        <a href="/legal/privacy">Privacy Policy</a>
+      </nav>
+      <div>&copy; 2026 Consent Receipts. Built at HackPSU Fall 26.</div>
+    </div>
+  </footer>
+  <script type="module" src="/js/account.js"></script>
+</body>
+</html>

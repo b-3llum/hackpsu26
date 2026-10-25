@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0e0f11"/>
+  <!-- Receipt: square top, torn zigzag bottom -->
+  <path d="M148 96h216a12 12 0 0 1 12 12v300l-27-18-27 18-27-18-27 18-27-18-27 18-27-18-27 18-27-18V108a12 12 0 0 1 12-12Z" fill="#ffffff"/>
+  <!-- Printed lines -->
+  <rect x="180" y="148" width="152" height="18" rx="9" fill="#0e0f11"/>
+  <rect x="180" y="196" width="120" height="18" rx="9" fill="#cfccc6"/>
+  <rect x="180" y="244" width="136" height="18" rx="9" fill="#cfccc6"/>
+  <rect x="180" y="292" width="80" height="18" rx="9" fill="#cfccc6"/>
+  <!-- Verified seal -->
+  <circle cx="362" cy="366" r="78" fill="#0e0f11"/>
+  <circle cx="362" cy="366" r="62" fill="#0f7b5f"/>
+  <path d="M332 366l22 22 40-44" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

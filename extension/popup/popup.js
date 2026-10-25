@@ -1,5 +1,7 @@
 import { FINANCE_CATEGORIES } from "../lib/finance/detect.js";
 import { suggestActions } from "../lib/actions/actions.js";
+import { speakSummary } from "../lib/account.js";
+import { SITE } from "../lib/settings.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -32,8 +34,35 @@ function actionItem(a) {
   return `<li class="claim"><details><summary>${esc(a.title)}</summary><div class="tiny">${esc(a.why)}</div>${a.sourceSentence ? `<div class="src">"${esc(a.sourceSentence)}"</div>` : ""}${a.draft ? `<pre class="draft">${esc(a.draft)}</pre>` : ""}<div class="btns">${copy}${link}</div></details></li>`;
 }
 
+// From the anonymous change tracker (signed in users only).
+function tracked(r) {
+  const n = Math.max(0, ...(r.policies || []).map((p) => p.changes90d || 0));
+  return n ? `<div class="tiny">This policy changed ${n} time${n === 1 ? "" : "s"} in the last 90 days across Consent Receipts users. <a href="${SITE}/changes" target="_blank" rel="noopener">See the tracker</a></div>` : "";
+}
+
+let playing = null;
+async function listen(button, receipt) {
+  const status = button.closest(".receipt").querySelector(".listen-status");
+  if (playing) { playing.audio.pause(); const was = playing.button; playing.button.textContent = "\u25B6 Listen"; playing = null; if (was === button) return; }
+  button.disabled = true;
+  status.textContent = "Getting audio...";
+  const { audio, error, status: code } = await speakSummary(receipt.summary);
+  button.disabled = false;
+  if (error) {
+    status.innerHTML = code === 401 ? `${esc(error)} <a href="${SITE}/login?ext=1" target="_blank" rel="noopener">Sign in</a>`
+      : code === 402 ? `${esc(error)} <a href="${SITE}/account" target="_blank" rel="noopener">Upgrade</a>` : esc(error);
+    return;
+  }
+  const el = new Audio(URL.createObjectURL(audio));
+  playing = { audio: el, button };
+  button.textContent = "\u25A0 Stop";
+  status.textContent = "Reading this receipt aloud (voice by ElevenLabs).";
+  el.onended = () => { button.textContent = "\u25B6 Listen"; status.textContent = ""; playing = null; };
+  el.play();
+}
+
 function trustLine(s) {
-  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy.</div>';
+  if (s.engine !== "ai") return '<div class="trust">Rule based: every point is quoted from the policy. <a href="#" class="pro-link">AI summaries with Pro</a></div>';
   return `<div class="trust">AI summary, trust ${Math.round((s.trust ?? 0) * 100)}%: claims without a real source sentence were removed. Tap a point to see its source.</div>`;
 }
 
@@ -49,7 +78,7 @@ function card(r) {
   <div class="details"><h3>What you agreed to</h3>${trustLine(s)}<ul class="claims">${claims}</ul>
   ${actions ? `<h3>What to do next</h3><ul class="claims">${actions}</ul>` : ""}
   ${cats ? `<h3>Cookie categories</h3><ul>${cats}</ul>` : ""}<h3>Policies</h3><ul>${links}</ul><h3>Change history</h3>${changes}
-  <div class="btns" style="margin-top:8px"><button class="danger del">Delete receipt</button></div></div></div>`;
+  ${tracked(r)}<div class="btns" style="margin-top:8px"><button class="listen">\u25B6 Listen</button><button class="danger del">Delete receipt</button></div><div class="tiny listen-status"></div></div></div>`;
 }
 
 async function render() {
@@ -60,6 +89,17 @@ async function render() {
 $("#list").addEventListener("click", async (e) => {
   const c = e.target.closest(".receipt");
   if (!c) return;
+  if (e.target.classList.contains("listen")) {
+    const { receipts = [] } = await chrome.storage.local.get("receipts");
+    const r = receipts.find((x) => x.id === c.dataset.id);
+    if (r) listen(e.target, r);
+    return;
+  }
+  if (e.target.classList.contains("pro-link")) {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+    return;
+  }
   if (e.target.classList.contains("copy")) {
     await navigator.clipboard.writeText(e.target.dataset.draft);
     e.target.textContent = "Copied";

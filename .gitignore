@@ -1,0 +1,27 @@
+# OS and editors
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Dependencies and local data
+node_modules/
+server/data/
+*.db
+*.db-wal
+*.db-shm
+
+# Secrets: never commit these (see CLAUDE.md)
+.env
+.env.*
+!server/deploy/env.example
+*.pem
+.apikeys
+
+# Build outputs (Chrome Web Store zips and similar)
+dist/
+*.zip
+*.crx
+
+# Personal Claude Code settings
+.claude/settings.local.json
