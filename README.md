@@ -27,7 +27,7 @@ Pro is free right now (server setting `FREE_PRO=1`; the Stripe billing code is k
 
 ## Try it in 2 minutes
 
-1. **Install the extension:** open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick the [`extension/`](extension/) folder. Pin the Consent Receipts icon.
+1. **Install the extension:** easiest is https://whatyousignupfor.us/install (download, unzip, Load unpacked; the page detects it and connects your account). From the repo: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and pick the [`extension/`](extension/) folder. Pin the Consent Receipts icon.
 2. **Run the offline demo:**
    ```
    cd extension/demo && python3 -m http.server 8765
