@@ -18,8 +18,9 @@ server/data/
 *.pem
 .apikeys
 
-# Build outputs (Chrome Web Store zips and similar)
+# Build outputs (Chrome Web Store zips, the website's extension download, and similar)
 dist/
+server/public/download/
 *.zip
 *.crx
 

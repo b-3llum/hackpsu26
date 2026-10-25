@@ -82,7 +82,12 @@
           <button class="btn btn-primary" id="connect" type="button">Connect the extension</button>
         </div>
         <div class="alert alert-info mt-16" id="no-ext" hidden>
-          We could not find the extension in this browser. Install it first: open <strong>chrome://extensions</strong>, turn on Developer mode, click <strong>Load unpacked</strong>, and pick the <strong>extension</strong> folder from the project. Then reload this page.
+          <p class="no-ext-title">The extension isn't installed in this browser yet.</p>
+          <div class="row mt-16">
+            <a class="btn btn-primary" href="/download/consent-receipts.zip" download="consent-receipts.zip" id="no-ext-download">Download the extension</a>
+            <a class="btn btn-secondary" href="/install">How to install (1 minute)</a>
+          </div>
+          <p class="hint mt-16">Already installed? Reload this page, then click Connect.</p>
         </div>
       </section>
     </div>

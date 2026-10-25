@@ -62,8 +62,9 @@ test("speakSummary: needs sign in, sends only risk and point texts, surfaces lim
   assert.deepEqual(body, { summary: { risk: "high", claims: [{ text: "They can sell your data" }] } });
   const limited = await speakSummary({ risk: "low", claims: [] }, { fetchImpl: reply(402, { error: "Free accounts get 3 listens a day." }) });
   assert.deepEqual(limited, { error: "Free accounts get 3 listens a day.", status: 402 });
-  assert.equal(await reportChange({ url: "https://a.com/t", hashAfter: "h" }, { fetchImpl: reply(200, { changes90d: 4 }) }), 4);
+  assert.equal(await reportChange({ url: "https://a.com/t?session=secret#frag", hashAfter: "h" }, { fetchImpl: reply(200, { changes90d: 4 }) }), 4);
   assert.equal(reply.last.url, `${SITE}/api/changes`);
+  assert.equal(JSON.parse(reply.last.init.body).url, "https://a.com/t", "query string and fragment never leave the browser");
   delete store.account;
   assert.equal(await reportChange({ url: "https://a.com/t", hashAfter: "h" }), null);
 });

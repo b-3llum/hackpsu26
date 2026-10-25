@@ -18,6 +18,9 @@ sudo -u consent git -C "$APP" fetch --quiet origin
 sudo -u consent git -C "$APP" checkout --quiet "$BRANCH"
 sudo -u consent git -C "$APP" reset --quiet --hard "origin/$BRANCH"
 (cd "$APP/server" && sudo -u consent npm ci --omit=dev --silent)
+# Extension download for the website (/install): unpacked build with the fixed ID, rebuilt on every deploy.
+command -v zip >/dev/null || apt-get install -y -qq zip >/dev/null
+(cd "$APP" && sudo -u consent node extension/tools/build-store.mjs --download server/public/download/consent-receipts.zip >/dev/null)
 
 install -m 644 "$APP/server/deploy/consent.service" /etc/systemd/system/consent.service
 install -m 644 "$APP/server/deploy/Caddyfile" /etc/caddy/Caddyfile

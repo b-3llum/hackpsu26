@@ -79,3 +79,37 @@ export function urlError() {
     : e === "unverified" ? "Your Google account email is not verified, so we could not sign you in with it."
     : "";
 }
+
+// Is the Consent Receipts extension installed in this browser? Chrome only exposes chrome.runtime to our pages
+// when an installed extension lists this site in externally_connectable, so this also works as a cheap check.
+export function askExtension(id, message) {
+  return new Promise((resolve) => {
+    try {
+      chrome.runtime.sendMessage(id, message, (reply) => resolve(chrome.runtime.lastError ? null : reply));
+    } catch { resolve(null); }
+  });
+}
+
+/** Returns the ID of the installed build that answers (developer or Chrome Web Store), or null. */
+export async function findExtension(ids = []) {
+  if (!window.chrome?.runtime?.sendMessage) return null;
+  for (const id of ids) {
+    if (await askExtension(id, { type: "status" })) return id;
+  }
+  return null;
+}
+
+/** Chrome, Edge, Brave, and other Chromium browsers can load the extension. */
+export const isChromium = () => Boolean(window.chrome) || /Chrome\//.test(navigator.userAgent);
+
+// The extension download URL with a version tag, so Cloudflare and browser caches never serve an old build.
+export async function freshDownloadLinks(...links) {
+  try {
+    const r = await fetch("/download/consent-receipts.json", { cache: "no-cache" });
+    if (!r.ok) return null;
+    const meta = await r.json();
+    const v = encodeURIComponent(meta.builtAt || meta.version);
+    for (const a of links) if (a) a.href = `/download/consent-receipts.zip?v=${v}`;
+    return meta;
+  } catch { return null; }
+}
