@@ -1,5 +1,7 @@
 # Consent Receipts
 
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/b-3llum/hackpsu26?utm_source=readme&utm_medium=badge)
+
 **Know what you signed up for.** A Chrome extension that saves a plain words receipt every time you click Agree, shows the exact policy sentence behind every risk, and alerts you when the terms change. Built at HackPSU Fall 26.
 
 - Live site: https://whatyousignupfor.us (landing page, accounts, Pro billing, terms change tracker)
