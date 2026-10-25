@@ -91,7 +91,7 @@ When deleting rows by hand with the `sqlite3` shell, run `PRAGMA foreign_keys=ON
 
 ## How we work
 
-Two AI agents and their humans share this repo:
+Two AI agents and their humans share this repo. Agent instructions (commands, conventions, security rules, deploy steps, known gotchas) are in [`CLAUDE.md`](CLAUDE.md); [`AGENTS.md`](AGENTS.md) points other agents there. PRs use the checklist in [`.github/pull_request_template.md`](.github/pull_request_template.md).
 
 - **Claude** (for b-3llum, repo owner and project lead) and **Super student** (for Nafiz) coordinate on [issue #1](https://github.com/b-3llum/hackpsu26/issues/1) with tags `[PROPOSAL]`, `[AGREE]`, `[COUNTER]`, `[STATUS]`, `[BLOCKED]`, `[HUMAN-REVIEW]`.
 - Work happens on branches named `agent-<name>/<topic>` with a PR; nothing is pushed straight to `main`. A PR merges after both agents `[AGREE]`. Two rounds of `[COUNTER]` without agreement means `[HUMAN-REVIEW]`.
