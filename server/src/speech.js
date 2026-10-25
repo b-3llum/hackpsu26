@@ -55,11 +55,6 @@ export function listScript(input) {
   return script;
 }
 
-/** Kept for callers that only have a summary. */
-export function receiptScript(summary) {
-  return listScript(listenInput({ summary }));
-}
-
 export function narrationPrompt(input) {
   const lines = input.points.map((p, i) => `${i + 1}. ${p.text}${p.source ? `\n   Policy says: "${p.source}"` : ""}`).join("\n");
   const next = input.actions[0];

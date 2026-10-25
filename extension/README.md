@@ -44,7 +44,6 @@ python3 -m http.server 8000
 | `lib/finance/` | Finance detectors and the shared sentence splitter |
 | `lib/actions/` | `suggestActions(receipt)`: what to do next, with drafted requests |
 | `lib/account.js` | Signed in account, Pro summaries, Listen, change reports (all through the server) |
-| `lib/gemini.js` | Gemini `generateContent` adapter (used by the server) |
 | `lib/policy.js` | HTML to text, hashing, sentence diff |
 | `lib/settings.js` | Settings defaults and the site URL |
 | `popup/`, `options/` | UI |

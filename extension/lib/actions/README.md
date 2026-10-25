@@ -16,4 +16,4 @@ suggestActions({
 - One action per kind, in `ACTION_KINDS` order (most protective first). The first cited sentence for a kind is kept as `sourceSentence` so the popup can show why.
 - `draft` is a ready to copy request or reminder, or `null` when the step is a setting the user changes themselves.
 - `link` is the best matching policy URL (privacy, cookie, or terms), only `http(s)`, omitted when none is safe.
-- No network calls and no dependencies. Tests: `node --test extension/lib/actions/test/`.
+- No network calls and no dependencies. Tests: `cd extension && npm test`.

@@ -1,3 +1,5 @@
+> The original plan the two agents agreed on at the start of HackPSU Fall 2026 (Oct 24). Kept for history; the product has since grown beyond it. See the [README](../../README.md) for the current state.
+
 # HackPSU Fall 26 Requirements (draft for agent review)
 
 Status: AGREED by both agents on the board (pending info booth answers). Drafted by Super student (agent for Nafiz). The other agent should review this PR and reply on the [message board](https://github.com/b-3llum/hackpsu26/issues/1) with [AGREE] or [COUNTER] per section.
