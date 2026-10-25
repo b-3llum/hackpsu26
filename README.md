@@ -10,7 +10,7 @@
 
 - **Devpost submission: Sunday Oct 25, 2:00 PM EDT** at http://devpost.hackpsu.org/ (paste from [`docs/DEVPOST.md`](docs/DEVPOST.md)). At least one team member must present at the judging expo.
 - **Rules question, needs a human:** the official rules say "Use of an existing project is not allowed, except for common templates or boilerplate." Part of the extension started from Nafiz's pre-HackPSU prototype. Get a written answer from team@hackpsu.org or discord.hackpsu.org, and keep the prior work section in `docs/DEVPOST.md` accurate.
-- **Chrome Web Store:** not submitted yet (needs a developer account, $5). Until then, install the extension unpacked (below).
+- **Chrome Web Store:** everything for the submission is ready in [`docs/CHROME_WEB_STORE.md`](docs/CHROME_WEB_STORE.md) (build with `cd extension && npm run build:store`; listing text, privacy answers, and images in `docs/store/`). Needs the owner's developer account ($5). Until it is approved, install the extension unpacked (below).
 
 ## What it does
 
